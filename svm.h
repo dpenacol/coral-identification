@@ -2,11 +2,10 @@
  * FILE NAME: svm.h		                    *
  * DESCRIPTION: Contains functions related  *
  *              to Support Vector Machine   *
- *              		                    *
  * VERSION: 322				                *
  * AUTHORS: LIBSVM Team     			    *
- *											*
  ********************************************/
+
 
 #ifndef _LIBSVM_H
 #define _LIBSVM_H
