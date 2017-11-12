@@ -12,6 +12,7 @@
 
 #include "histogram.h"
 #include "filters.h"
+#include "svm.h"
 
 int main() {
     // Reading the image.
