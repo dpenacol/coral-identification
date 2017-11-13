@@ -13,6 +13,9 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 struct keyPoint{
     cv::Point pt;
@@ -24,7 +27,12 @@ struct img_data{
     int index;
     int year;
     int n_labels;
-    struct keyPoint** key_Point;
+    struct keyPoint* key_Point;
 };
+
+void testTxt(void );
+
+struct img_data readtxt(std::string fileName, int year, int index);
+void getDiccionaryTextons(cv::Mat diccionaryTextons, struct img_data data[200], int start_index, int finish_index);
 
 #endif
