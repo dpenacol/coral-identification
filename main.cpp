@@ -9,9 +9,10 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-
+#include <iostream>
 #include "histogram.h"
 #include "filters.h"
+
 
 int main() {
     // Reading the image.
@@ -41,5 +42,6 @@ int main() {
     cv::Mat img_MR(img_Lab.size().height,img_Lab.size().width, CV_32FC(24));
     maximumResponseFilter(img_Lab, img_MR, kernel);
 
+    std::cout << img_MR.size().height << "  " << img_MR.size().width << std::endl;
     return 0;
 }
