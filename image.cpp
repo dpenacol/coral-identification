@@ -9,7 +9,6 @@
 
 #include "image.h"
 
-<<<<<<< HEAD
 int str2label(std::string str);
 
 void testTxt(void ){
@@ -93,8 +92,6 @@ int str2label(std::string str){
     return label;
     }
 
-=======
->>>>>>> 71381626a06d415e2400e21dcb6578f00e443547
 void getDiccionaryTextons(cv::Mat diccionaryTextons, struct img_data data[200], int start_index, int finish_index){
     // Parameters of K-means algorithm
     int clusters = 15;
