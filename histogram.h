@@ -15,7 +15,6 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <string>
-//#include <iostream>
 
 void getHistogram(cv::Mat img, int histogram[3][256]);
 // Computes the intensity distribution histograms for the

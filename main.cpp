@@ -14,6 +14,7 @@
 #include "histogram.h"
 #include "filters.h"
 #include "svm.h"
+#include "image.h"
 
 int main() {
     // Reading the image.
@@ -62,7 +63,7 @@ int main() {
 
     std::cout << "Compactness measure from K-means: "; 
     std::cout << kmeans(img_kmeans, clusterCount, labels, cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 10000, 0.0001), attempts, cv::KMEANS_PP_CENTERS, centers);
-    std::cout << "\n"; 
-
+    std::cout << "\n";
+    
     return 0;
 }
