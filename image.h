@@ -24,7 +24,9 @@ struct img_data{
     int index;
     int year;
     int n_labels;
-    struct keyPoint** key_Point;
+    struct keyPoint* key_Point;
 };
+
+void getDiccionaryTextons(cv::Mat diccionaryTextons, struct img_data data[200], int start_index, int finish_index);
 
 #endif

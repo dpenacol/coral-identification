@@ -44,26 +44,10 @@ int main() {
     cv::Mat img_MR(img_Lab.size().height,img_Lab.size().width, CV_32FC(24));
     maximumResponseFilter(img_Lab, img_MR, kernel);
 
-    // Creating a suitable matrix for the K-means algorithm.
-    cv::Mat img_kmeans(img_MR.size().height * img_MR.size().width, 24, CV_32FC1);
+    // Creating diccionary of textons
+    cv::Mat diccionaryTextons(135, 24, CV_32FC1);
+    cv::Mat centers[9];
+    cv::Mat labels[9];
 
-    for(int j=0; j<img_MR.size().height; j++){
-        for(int k=0; k<img_MR.size().width; k++){
-            for(int l = 0; l<24; l++){   
-                img_kmeans.at<float>(k + j * img_MR.size().width,l) = img_MR.at<cv::Vec<float, 24>>(j,k)[l];
-            }
-        }
-    }
-
-    cv::Mat centers;
-    cv::Mat labels;
-    int clusterCount = 15;
-    int attempts = 10;
-
-
-    std::cout << "Compactness measure from K-means: "; 
-    std::cout << kmeans(img_kmeans, clusterCount, labels, cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 10000, 0.0001), attempts, cv::KMEANS_PP_CENTERS, centers);
-    std::cout << "\n";
-    
     return 0;
 }
