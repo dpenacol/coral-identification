@@ -30,9 +30,12 @@ struct img_data{
     struct keyPoint* key_Point;
 };
 
+<<<<<<< HEAD
 void testTxt(void );
 
 struct img_data readtxt(std::string fileName, int year, int index);
+=======
+>>>>>>> 71381626a06d415e2400e21dcb6578f00e443547
 void getDiccionaryTextons(cv::Mat diccionaryTextons, struct img_data data[200], int start_index, int finish_index);
 
 #endif
