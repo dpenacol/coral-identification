@@ -45,9 +45,8 @@ int main() {
     cv::Mat img_MR(img_Lab.size().height,img_Lab.size().width, CV_32FC(24));
     maximumResponseFilter(img_Lab, img_MR, kernel);
     */
-    //testTxt();
+    testTxt();
     
-
     // Creating diccionary of textons
     cv::Mat diccionaryTextons(135, 24, CV_32FC1);
     cv::Mat centers[9];

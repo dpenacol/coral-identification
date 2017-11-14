@@ -5,4 +5,6 @@ MR_filter_MATLAB*
 *.txt
 main
 coral-identification
+Coral_Identification*
+.vs*
 Vision_MCR*

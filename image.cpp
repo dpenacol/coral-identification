@@ -15,7 +15,7 @@ void testTxt(void ){
     std::string fileName = "mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
     struct img_data data = readtxt(fileName, 2008, 1);
 
-    for(int i = 0; i<1 ;i++){
+    for(int i = 0; i<10 ;i++){
         std::cout << data.key_Point[i].pt.x << " " << data.key_Point[i].pt.y << " " << data.key_Point[i].type << std::endl;
     }
     delete [] data.key_Point;
@@ -36,9 +36,9 @@ struct img_data readtxt(std::string fileName, int year, int index){
             std::getline(file,str);
             i++;
         }
-        file.seekg(0, std::ios::beg);
+		file.seekg(0, std::ios::beg);
         std::getline(file,str);
-        data.key_Point = new struct keyPoint[i-1];
+        data.key_Point = new struct keyPoint[i-2];
         i=0;
         while(!file.eof()) {
             file >> str;
