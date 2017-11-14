@@ -43,15 +43,9 @@ int main() {
     // Applying the Maximum Response Filter.
     cv::Mat img_MR(img_Lab.size().height,img_Lab.size().width, CV_32FC(24));
     maximumResponseFilter(img_Lab, img_MR, kernel);
-<<<<<<< HEAD
     
     testTxt();
     
-=======
-    */
-    testTxt();
-    
->>>>>>> 93038896f4cfeda9b52fce9a9e3e9297866870e0
     // Creating diccionary of textons
     cv::Mat dictionaryTextons(135, 24, CV_32FC1);
     return 0;
