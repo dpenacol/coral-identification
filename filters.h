@@ -118,4 +118,5 @@ void maximumResponseFilter(cv::Mat img_Lab, cv::Mat img_MR, cv::Mat kernel[38]);
 //          -    36: Gaussian
 //          -    37: LoG
 
+cv::Mat getMaximumResponseFilter(std::string filename);
 #endif

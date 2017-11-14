@@ -38,4 +38,12 @@ void saveDescriptor(struct img_data data);
 
 void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index);
 
+bool getDataSet(struct img_data* data_2008, struct img_data* data_2009,struct img_data* data_2010);
+
+bool getDataSet_2008(struct img_data* data_2008);
+
+bool getDataSet_2009(struct img_data* data_2008);
+
+bool getDataSet_2010(struct img_data* data_2008);
+
 #endif

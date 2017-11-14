@@ -20,22 +20,25 @@ int main() {
     // Creating the structures for the 2008, 2009 and 2010 sets
     struct img_data data_2008[671];
     struct img_data data_2009[695];
-    struct img_data data_2010[689];    
-
+    struct img_data data_2010[689];
+    std::string filename = "./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg";
     // Reading the image.
-    cv::Mat img = cv::imread("./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg",CV_LOAD_IMAGE_COLOR);
+    cv::Mat img = cv::imread(filename,CV_LOAD_IMAGE_COLOR);
 
     // Resizing the image.
     cv::Mat img_resized(img.size().height/2,img.size().width/2, CV_8UC3, cv::Scalar(255,255,255));
     resize(img, img_resized, img_resized.size(), 0, 0, cv::INTER_CUBIC);
+    img.release();
 
     // Creating the preprocessed image.
     cv::Mat img_preprocessed(img_resized.size().height,img_resized.size().width, CV_8UC3, cv::Scalar(255,255,255));
     colorChannelStretch(img_resized, img_preprocessed, 1, 99);
+    img_resized.release();
 
     // Transforming the image to the L*a*b* color space.
     cv::Mat img_Lab(img_preprocessed.size().height,img_preprocessed.size().width, CV_8UC3, cv::Scalar(255,255,255));
     cv::cvtColor(img_preprocessed, img_Lab, cv::COLOR_BGR2Lab);
+    img_preprocessed.release();
 
     // Creating the kernels for the Maximum Response filter.
     int i;
@@ -48,10 +51,11 @@ int main() {
     // Applying the Maximum Response Filter.
     cv::Mat img_MR(img_Lab.size().height,img_Lab.size().width, CV_32FC(24));
     maximumResponseFilter(img_Lab, img_MR, kernel);
+    img_Lab.release();
 
     std::string fileName = "./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
     struct img_data data = getDescriptor(fileName, img_MR, 2008, 1);
-    //readtxt(fileName, data, 2008, 1);
+    
 
     // Impresion de prueba
     for(int i = 0; i<data.n_labels ;i++){
@@ -62,6 +66,6 @@ int main() {
     }
     // Creating diccionary of textons
     cv::Mat dictionaryTextons(135, 24, CV_32FC1);
-    delete [] data.key_Point;
+    //delete [] data.key_Point;
     return 0;
 }

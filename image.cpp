@@ -8,6 +8,8 @@
  ********************************************/
 
 #include "image.h"
+#include "filters.h"
+#include "histogram.h"
 
 int str2label(std::string str);
 
@@ -83,6 +85,47 @@ int str2label(std::string str){
     return label;
 }
 
+bool getDataSet(struct img_data* data_2008, struct img_data* data_2009,struct img_data* data_2010){
+    getDataSet_2008(data_2008);
+
+    return true;
+}
+
+bool getDataSet_2008(struct img_data* data_2008){
+    std::string directory = "./Vision_MCR/2008/mcr_lter";
+
+    std::string img_directory;
+    std::string n_lter = "1";
+
+    std::string type = "_fringingreef";
+    std::string pole = "_pole";
+    std::string qu = "_qu";
+    std::string id = "_20080415.jpg";
+    int index_data = 0;
+    int k = 1;
+
+    img_directory = directory + n_lter + type + pole + std::to_string(k) + "-" + std::to_string(k+1) + qu + std::to_string(1) + id;
+    std::string txt = img_directory + ".txt";
+    std::cout << img_directory + "\n";
+    cv::Mat img_MR;
+    img_MR = getMaximumResponseFilter(img_directory);
+    data_2008[index_data] = getDescriptor(txt, img_MR, 2008, index_data);
+
+    /*for(int i = 1; i<6; i++){
+        for(int j=1; j<9; j++){
+            img_directory = directory + n_lter + type + pole + std::to_string(k) + "-" + std::to_string(k+1) + qu + std::to_string(j) + id;
+            std::cout << img_directory + "\n";
+            data_2008[index_data] = getDescriptor(img_directory + ".txt", getMaximumResponseFilter(img_directory), 2008, index_data);
+            index_data++;
+        }
+        k++;
+    }*/
+
+    return true;
+}
+
+
+
 void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index){
     // Parameters of K-means algorithm
     int clusters = 15;
@@ -125,3 +168,4 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
         }
     }
 }
+
