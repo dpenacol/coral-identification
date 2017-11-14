@@ -12,7 +12,7 @@
 int str2label(std::string str);
 
 void testTxt(void){
-    std::string fileName = "mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
+    std::string fileName = "./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
     struct img_data data = readtxt(fileName, 2008, 1);
 
     for(int i = 0; i<200 ;i++){

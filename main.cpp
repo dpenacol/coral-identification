@@ -18,7 +18,7 @@
 
 int main() {
     // Reading the image.
-    cv::Mat img = cv::imread("mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg",CV_LOAD_IMAGE_COLOR);
+    cv::Mat img = cv::imread("./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg",CV_LOAD_IMAGE_COLOR);
 
     // Resizing the image.
     cv::Mat img_resized(img.size().height/2,img.size().width/2, CV_8UC3, cv::Scalar(255,255,255));
