@@ -15,7 +15,7 @@ void testTxt(void){
     std::string fileName = "mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
     struct img_data data = readtxt(fileName, 2008, 1);
 
-    for(int i = 0; i<10 ;i++){
+    for(int i = 0; i<200 ;i++){
         std::cout << data.key_Point[i].pt.x << " " << data.key_Point[i].pt.y << " " << data.key_Point[i].type << std::endl;
     }
     delete [] data.key_Point;
@@ -23,33 +23,27 @@ void testTxt(void){
 
 struct img_data readtxt(std::string fileName, int year, int index){
     struct img_data data;
+    struct keyPoint labels[200];
     data.index = 0;
     data.year = 0;
-    data.n_labels = 0;
+    data.n_labels = 200;
 
     std::ifstream file(fileName);
     if (file.is_open()){
-        cv::Point pt;
         std::string str;
-        int i=0;
-        while(!file.eof()){
-            std::getline(file,str);
-            i++;
-        }
-		file.seekg(0, std::ios::beg);
-        std::getline(file,str);
-        data.key_Point = new struct keyPoint[i-2];
-        i=0;
         
-        while(!file.eof()) {
+        std::getline(file,str);
+        data.key_Point = new struct keyPoint[200];
+
+        for(int i=0; i<200; i++){        
             file >> str;
             data.key_Point[i].pt.x = atoi(str.c_str());
             file >> str; 
             data.key_Point[i].pt.y = atoi(str.c_str());
             file >> str;
             data.key_Point[i].type = str2label(str);
-            data.n_labels = i++;
         }
+
         data.index = index;
         data.year = year;
         file.close();
