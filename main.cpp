@@ -17,6 +17,11 @@
 #include "image.h"
 
 int main() {
+    // Creating the structures for the 2008, 2009 and 2010 sets
+    struct img_data data_2008[671];
+    struct img_data data_2009[695];
+    struct img_data data_2010[689];    
+
     // Reading the image.
     cv::Mat img = cv::imread("./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg",CV_LOAD_IMAGE_COLOR);
 
