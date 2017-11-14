@@ -32,7 +32,9 @@ struct img_data{
 
 void testTxt(void);
 
-struct img_data readtxt(std::string fileName, int year, int index);
+struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int index);
+
+void saveDescriptor(struct img_data data);
 
 void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index);
 

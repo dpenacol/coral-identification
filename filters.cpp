@@ -234,7 +234,7 @@ void maximumResponseFilter(cv::Mat img_Lab, cv::Mat img_MR, cv::Mat kernel[38]){
 
     // Defining the image where the MR filter response will be saved,
     // and applying the MR filter.
-    //cv::Mat img_MR[8];
+    // cv::Mat img_MR[8];
     // For the first six entries, we find the maximum response.
     int j, k, l;
     float max[3];

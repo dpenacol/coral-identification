@@ -43,10 +43,20 @@ int main() {
     // Applying the Maximum Response Filter.
     cv::Mat img_MR(img_Lab.size().height,img_Lab.size().width, CV_32FC(24));
     maximumResponseFilter(img_Lab, img_MR, kernel);
-    
-    testTxt();
-    
+
+    std::string fileName = "./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
+    struct img_data data = getDescriptor(fileName, img_MR, 2008, 1);
+    //readtxt(fileName, data, 2008, 1);
+
+    // Impresion de prueba
+    for(int i = 0; i<data.n_labels ;i++){
+        std::cout << data.key_Point[i].pt.x << " " << data.key_Point[i].pt.y << " " << data.key_Point[i].type << std::endl;
+    }
+    for(int i = 0; i<24 ;i++){
+        std::cout << data.key_Point[i].r24[i] << std::endl;
+    }
     // Creating diccionary of textons
     cv::Mat dictionaryTextons(135, 24, CV_32FC1);
+    delete [] data.key_Point;
     return 0;
 }

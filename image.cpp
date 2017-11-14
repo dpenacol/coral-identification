@@ -11,41 +11,37 @@
 
 int str2label(std::string str);
 
-void testTxt(void){
-    std::string fileName = "./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
-    struct img_data data = readtxt(fileName, 2008, 1);
+void saveDescriptor(struct img_data data){
 
-    for(int i = 0; i<200 ;i++){
-        std::cout << data.key_Point[i].pt.x << " " << data.key_Point[i].pt.y << " " << data.key_Point[i].type << std::endl;
-    }
-    delete [] data.key_Point;
 }
 
-struct img_data readtxt(std::string fileName, int year, int index){
+struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int index){
     struct img_data data;
-    struct keyPoint labels[200];
     data.index = 0;
     data.year = 0;
     data.n_labels = 200;
 
     std::ifstream file(fileName);
     if (file.is_open()){
+        int i;
         std::string str;
-        
         std::getline(file,str);
+        data.index = index;
+        data.year = year;
         data.key_Point = new struct keyPoint[200];
-
-        for(int i=0; i<200; i++){        
+        for(i=0; i<200; i++){        
             file >> str;
-            data.key_Point[i].pt.x = atoi(str.c_str());
+            data.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str; 
-            data.key_Point[i].pt.y = atoi(str.c_str());
+            data.key_Point[i].pt.y = atoi(str.c_str())/2;
             file >> str;
             data.key_Point[i].type = str2label(str);
         }
-
-        data.index = index;
-        data.year = year;
+        for(i=0; i< data.n_labels ; i++){
+            for(int j=0; j<24; j++){
+                data.key_Point[i].r24[j] = img_MR.at<cv::Vec<float, 24>>(data.key_Point[i].pt.x, data.key_Point[i].pt.y)[j];
+            }
+        }
         file.close();
     } else{
         std::cout << "No se pudo abrir el archivo!" << std::endl;
