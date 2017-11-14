@@ -6,16 +6,12 @@
  * AUTHORS: Diego Peña, Victor García,      *
  *          Fabio Morales, Andreina Duarte  *
  ********************************************/
-
 #include "image.h"
 #include "filters.h"
 #include "histogram.h"
 
 int str2label(std::string str);
 
-void saveDescriptor(struct img_data data){
-
-}
 
 struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int index){
     struct img_data data;
@@ -30,7 +26,6 @@ struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int
         std::getline(file,str);
         data.index = index;
         data.year = year;
-        data.key_Point = new struct keyPoint[200];
         for(i=0; i<200; i++){        
             file >> str;
             data.key_Point[i].pt.x = atoi(str.c_str())/2;
@@ -47,6 +42,40 @@ struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int
         file.close();
     } else{
         std::cout << "No se pudo abrir el archivo!" << std::endl;
+    }
+    return data;
+}
+
+void saveDescriptor(struct img_data data){
+    int i;
+    std::ofstream fout;
+    fout.open("svm_data.bin",std::ios::out| std::ios::binary);
+    fout.write((char *)&data, sizeof(struct img_data));
+    for(int i=0; i<data.n_labels; i++){
+        fout.write((char *)&data.key_Point[i], sizeof(struct keyPoint));
+        for(int j=0; j<24; j++){
+            fout.write((char *)&data.key_Point[i].r24[j], sizeof(data.key_Point[i].r24[j]));
+        }
+    }
+    fout.close();
+}
+
+struct img_data loadDescriptor(){
+    struct img_data data;
+    std::ifstream fin;
+    fin.open("svm_data.bin", std::ios::in| std::ios::binary);
+    if(fin.is_open()){
+        std::cout << "Archivo Abierto!" << std::endl;
+        fin.read((char *)&data, sizeof(struct img_data));
+        for(int i=0; i<data.n_labels; i++){
+        fin.read((char *)&data.key_Point[i], sizeof(struct keyPoint));
+            for(int j=0; j<24; j++){
+                fin.read((char *)&data.key_Point[i].r24[j], sizeof(data.key_Point[i].r24[j]));
+            }
+        }
+        fin.close();
+    }else{
+        std::cout << "No se pudo abir el archivo!" << std::endl;
     }
     return data;
 }

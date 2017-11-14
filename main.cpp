@@ -18,10 +18,17 @@
 
 int main() {
     // Creating the structures for the 2008, 2009 and 2010 sets
+<<<<<<< HEAD
     struct img_data data_2008[671];
     struct img_data data_2009[695];
     struct img_data data_2010[689];
     std::string filename = "./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg";
+=======
+    //struct img_data data_2008[671];
+    //struct img_data data_2009[695];
+    //struct img_data data_2010[689];    
+
+>>>>>>> 1d07a897321bb9468e7440444217715e38ae5320
     // Reading the image.
     cv::Mat img = cv::imread(filename,CV_LOAD_IMAGE_COLOR);
 
@@ -53,19 +60,33 @@ int main() {
     maximumResponseFilter(img_Lab, img_MR, kernel);
     img_Lab.release();
 
+    // Get the entire data from image text file (coord, label, and r24 vector from img_MR) 
+    // and stores in img_data struct
     std::string fileName = "./Vision_MCR/2008/mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
     struct img_data data = getDescriptor(fileName, img_MR, 2008, 1);
     
+<<<<<<< HEAD
+=======
+    // save an image data in a binary file
+    saveDescriptor(data);
+>>>>>>> 1d07a897321bb9468e7440444217715e38ae5320
 
-    // Impresion de prueba
+    // load the image data from a binary file
+    struct img_data data = loadDescriptor();
+
+    // print test, first the coordinates and labels, next an r24 vector information
     for(int i = 0; i<data.n_labels ;i++){
         std::cout << data.key_Point[i].pt.x << " " << data.key_Point[i].pt.y << " " << data.key_Point[i].type << std::endl;
     }
     for(int i = 0; i<24 ;i++){
         std::cout << data.key_Point[i].r24[i] << std::endl;
     }
-    // Creating diccionary of textons
+    
     cv::Mat dictionaryTextons(135, 24, CV_32FC1);
+<<<<<<< HEAD
     //delete [] data.key_Point;
+=======
+
+>>>>>>> 1d07a897321bb9468e7440444217715e38ae5320
     return 0;
 }
