@@ -18,7 +18,6 @@
 
 int main() {
     // Reading the image.
-    /*
     cv::Mat img = cv::imread("mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg",CV_LOAD_IMAGE_COLOR);
 
     // Resizing the image.
@@ -44,14 +43,10 @@ int main() {
     // Applying the Maximum Response Filter.
     cv::Mat img_MR(img_Lab.size().height,img_Lab.size().width, CV_32FC(24));
     maximumResponseFilter(img_Lab, img_MR, kernel);
-    */
-    //testTxt();
     
-
+    testTxt();
+    
     // Creating diccionary of textons
-    cv::Mat diccionaryTextons(135, 24, CV_32FC1);
-    cv::Mat centers[9];
-    cv::Mat labels[9];
-
+    cv::Mat dictionaryTextons(135, 24, CV_32FC1);
     return 0;
 }

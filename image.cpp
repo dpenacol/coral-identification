@@ -11,7 +11,7 @@
 
 int str2label(std::string str);
 
-void testTxt(void ){
+void testTxt(void){
     std::string fileName = "mcr_lter1_fringingreef_pole1-2_qu1_20080415.jpg.txt";
     struct img_data data = readtxt(fileName, 2008, 1);
 
@@ -40,6 +40,7 @@ struct img_data readtxt(std::string fileName, int year, int index){
         std::getline(file,str);
         data.key_Point = new struct keyPoint[i-1];
         i=0;
+        
         while(!file.eof()) {
             file >> str;
             data.key_Point[i].pt.x = atoi(str.c_str());
@@ -90,9 +91,9 @@ int str2label(std::string str){
     else if(str == "Pavon")
         label = 9;
     return label;
-    }
+}
 
-void getDiccionaryTextons(cv::Mat diccionaryTextons, struct img_data data[200], int start_index, int finish_index){
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index){
     // Parameters of K-means algorithm
     int clusters = 15;
     int attempts = 10;
@@ -123,14 +124,14 @@ void getDiccionaryTextons(cv::Mat diccionaryTextons, struct img_data data[200], 
         kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER,100,0.001), attempts, initial_centers, centers[m]);
     }
 
-    // Saving the 135 textons on the diccionary
-    for(int j=0; j<135; j++){
-        
-        for(int m=0; m<9; m++){
-
+    // Saving the 135 textons on the dictionary
+    int n = 0;
+    for(int j=0; j<9; j++){
+        for(int k=0; k<15; k++){
+            for(int m=0; m<24; m++){
+                dictionaryTextons.at<float>(n,m) = class_data[j].at<float>(k,m);
+            }
+            n++;
         }
     }
-
-
-
 }

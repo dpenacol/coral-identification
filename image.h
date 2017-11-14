@@ -30,9 +30,10 @@ struct img_data{
     struct keyPoint* key_Point;
 };
 
-void testTxt(void );
+void testTxt(void);
 
 struct img_data readtxt(std::string fileName, int year, int index);
-void getDiccionaryTextons(cv::Mat diccionaryTextons, struct img_data data[200], int start_index, int finish_index);
+
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index);
 
 #endif
