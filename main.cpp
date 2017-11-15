@@ -19,7 +19,7 @@
 int main() {
     // Creating the data struct where the information is going to be saved
     int n_images = 1338;
-    img_data* data = new img_data[n_images];
+    struct img_data* data = new struct img_data[n_images];
 
     // Applying the Maximum Response Filter to each image of the 2008, 2009 and
     // 2010 set. Then reads each image info .txt to save the results on data structure

@@ -43,26 +43,42 @@ struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int
     return data;
 }
 
-void saveDescriptor(struct img_data data){
-    int i;
+void saveDescriptor(struct img_data* data){
+    int n_images = 2055;
     std::ofstream fout;
     fout.open("svm_data.bin",std::ios::out| std::ios::binary);
-    fout.write((char *)&data, sizeof(struct img_data));
-    for(int i=0; i<data.n_labels; i++){
-        fout.write((char *)&data.key_Point[i], sizeof(struct keyPoint));
-        for(int j=0; j<24; j++){
-            fout.write((char *)&data.key_Point[i].r24[j], sizeof(data.key_Point[i].r24[j]));
+
+    for(int i = 0; i < n_images; i++){
+        fout.write((char *)&data[i], sizeof(struct img_data));
+        for(int j=0; j<data[i].n_labels; j++){
+            fout.write((char *)&data[i].key_Point[j], sizeof(struct keyPoint));
+            for(int k=0; k<24; k++){
+                fout.write((char *)&data[i].key_Point[j].r24[k], sizeof(data[i].key_Point[j].r24[k]));
+            }
         }
+        fout.close();
     }
-    fout.close();
 }
 
-struct img_data loadDescriptor(){
-    struct img_data data;
+struct img_data* loadDescriptor(){
+    int n_images = 2055;
+    struct img_data* data = new struct img_data[2055];
     std::ifstream fin;
     fin.open("svm_data.bin", std::ios::in| std::ios::binary);
     if(fin.is_open()){
         std::cout << "Archivo Abierto!" << std::endl;
+
+        for(int i = 0; i < n_images; i++){
+            fin.read((char *)&data[i], sizeof(struct img_data));
+            for(int j=0; j<data[i].n_labels; j++){
+                fin.read((char *)&data[i].key_Point[j], sizeof(struct keyPoint));
+                for(int k=0; k<24; k++){
+                    fin.read((char *)&data[i].key_Point[j].r24[k], sizeof(data[i].key_Point[j].r24[k]));
+                }
+            }
+            fin.close();
+        }
+
         fin.read((char *)&data, sizeof(struct img_data));
         for(int i=0; i<data.n_labels; i++){
         fin.read((char *)&data.key_Point[i], sizeof(struct keyPoint));
