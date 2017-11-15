@@ -57,7 +57,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
 int porcentage(int index_data, int n_images);
 // Shows porcentage of completition of the getDataSet function
 
-bool getDataSet(struct img_data data[2055], int n_images);
+bool getDataSet(struct img_data* data, int n_images);
 // Load the Data of the images and the txt of the three 2008, 2009 and 2010 sets of images.
 // The sets needs to be saved on the project folder by this structure:
 // ~/ProjectRoot

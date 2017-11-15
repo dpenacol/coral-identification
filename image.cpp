@@ -116,7 +116,7 @@ int porcentage(int index_data, int n_images){
     return index_data*100/n_images;
 }
 
-bool getDataSet(struct img_data data[2055], int n_images){
+bool getDataSet(struct img_data* data, int n_images){
 // Reading 2008 set
     // Directory of the 2008 set
     std::string directory = "./Vision_MCR/2008/";
@@ -141,21 +141,22 @@ bool getDataSet(struct img_data data[2055], int n_images){
     }
     // Sorting the vector of strings so it is alphabetically ordered
     std::sort(file_names.begin(), file_names.end());
-
-    for(int i=0; i<1343; i++){
+    /*
+    for(int i=4; i<1342; i++){
         std::cout << "\n" + std::to_string(i) + ". ";
         std::cout << file_names[i];
     }
     std::cout << "\n";
-
+    */
     int index_data = 0;
-/*
+    i = 4;
+    
     for(int i = 4; i<1342; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] " + img_directory + "\n";
-        data[index_data] = getDescriptor(img_directory + ".txt", getMaximumResponseFilter(img_directory), 2008, index_data);
+        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] " + file_names[i] + "\n";
+        data[index_data] = getDescriptor(file_names[i] + ".txt", getMaximumResponseFilter(file_names[i]), 2008, index_data);
         index_data++;
     }
-*/
+    
     return true;
 }
 

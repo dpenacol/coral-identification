@@ -18,13 +18,13 @@
 
 int main() {
     // Creating the data struct where the information is going to be saved
-    int n_images = 2055;
-    struct img_data data[n_images];
+    int n_images = 1338;
+    img_data* data = new img_data[n_images];
 
     // Applying the Maximum Response Filter to each image of the 2008, 2009 and
     // 2010 set. Then reads each image info .txt to save the results on data structure
     getDataSet(data, n_images);
-/*
+
     // save the image data in a binary file
     //saveDescriptor(data);
 
@@ -32,16 +32,14 @@ int main() {
     // data = loadDescriptor();
 
     // print test, first the coordinates and labels, next an r24 vector information
-    int image = 45;
+    int image = 500;
     for(int i = 0; i<data[image].n_labels ;i++){
         std::cout << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].type << std::endl;
     }
-
+/*
     // Freeing space of the data struct
     for(int i=0; i<n_images; i++){
-        delete [] data[i].key_Point;
-        std::cout << i;
-        std::cout << "\n";       
+        delete [] data[i].key_Point;      
     }
     free(data);
 */
