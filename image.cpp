@@ -78,15 +78,6 @@ struct img_data* loadDescriptor(){
             }
             fin.close();
         }
-
-        fin.read((char *)&data, sizeof(struct img_data));
-        for(int i=0; i<data.n_labels; i++){
-        fin.read((char *)&data.key_Point[i], sizeof(struct keyPoint));
-            for(int j=0; j<24; j++){
-                fin.read((char *)&data.key_Point[i].r24[j], sizeof(data.key_Point[i].r24[j]));
-            }
-        }
-        fin.close();
     }else{
         std::cout << "No se pudo abir el archivo!" << std::endl;
     }
