@@ -43,8 +43,7 @@ struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int
     return data;
 }
 
-void saveDescriptor(struct img_data* data){
-    int n_images = 2055;
+void saveDescriptor(struct img_data* data, int n_images){
     std::ofstream fout;
     fout.open("svm_data.bin",std::ios::out| std::ios::binary);
 
@@ -56,12 +55,11 @@ void saveDescriptor(struct img_data* data){
                 fout.write((char *)&data[i].key_Point[j].r24[k], sizeof(data[i].key_Point[j].r24[k]));
             }
         }
-        fout.close();
     }
+    fout.close();
 }
 
-struct img_data* loadDescriptor(){
-    int n_images = 2055;
+struct img_data* loadDescriptor(int n_images){
     struct img_data* data = new struct img_data[2055];
     std::ifstream fin;
     fin.open("svm_data.bin", std::ios::in| std::ios::binary);
@@ -76,8 +74,8 @@ struct img_data* loadDescriptor(){
                     fin.read((char *)&data[i].key_Point[j].r24[k], sizeof(data[i].key_Point[j].r24[k]));
                 }
             }
-            fin.close();
         }
+        fin.close();
     }else{
         std::cout << "No se pudo abir el archivo!" << std::endl;
     }
@@ -87,34 +85,36 @@ struct img_data* loadDescriptor(){
 int str2label(std::string str){
     int label = 0;
     /*
-    1 = Sand
-    2 = Macro
-    3 = CCA
-    4 = off
-    5 = Porit
-    6 = Turf
-    7 = Pocill
-    8 = Monta
-    9 = Pavon
+    1 = CCA
+    2 = Turf
+    3 = Macro
+    4 = Sand
+    5 = Acrop
+    6 = Pavon
+    7 = Monti
+    8 = Pocill
+    9 = Porit
     */
-    if(str == "Sand")
+    if(str == "CCA")
         label = 1;
-    else if(str == "Macro")
-        label = 2;
-    else if(str == "CCA")
-        label = 3;
-    else if(str == "Off")
-        label = 4;
-    else if(str == "Porit")
-        label = 5;
     else if(str == "Turf")
-        label = 6;
-    else if(str == "Pocill")
-        label = 7;
-    else if(str == "Monta")
-        label = 8;
+        label = 2;
+    else if(str == "Macro")
+        label = 3;
+    else if(str == "Sand")
+        label = 4;
+    else if(str == "Acrop")
+        label = 5;
     else if(str == "Pavon")
+        label = 6;
+    else if(str == "Monti")
+        label = 7;
+    else if(str == "Pocill")
+        label = 8;
+    else if(str == "Porit" || str == "P. Irr" || str == "P. Rus" || str == "P mass")
         label = 9;
+    else
+        label = 0;
     return label;
 }
 
@@ -130,7 +130,6 @@ bool getDataSet(struct img_data* data, int n_images){
 
     // Creating a vector of strings to save the names of the images and txt
     std::vector<std::string> file_names;
-
 
     // Reading the folder for each element and save their names in file_names
     DIR *dir;
@@ -152,7 +151,7 @@ bool getDataSet(struct img_data* data, int n_images){
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2008 data set    
-    for(int i = 2; i<1343; i=i+2){
+    for(int i = 2; i<1344; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2008/" + file_names.at(i) + "\n";
         data[index_data] = getDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), 2008, index_data);
         index_data++;
@@ -175,9 +174,9 @@ bool getDataSet(struct img_data* data, int n_images){
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2009 data set    
-    for(int i = 2; i<1391; i=i+2){
+    for(int i = 2; i<1392; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2009/" + file_names.at(i) + "\n";
-        data[index_data] = getDescriptor("./Vision_MCR/2009/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2009/" + file_names.at(i)), 2008, index_data);
+        data[index_data] = getDescriptor("./Vision_MCR/2009/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2009/" + file_names.at(i)), 2009, index_data);
         index_data++;
     }
 
@@ -198,12 +197,11 @@ bool getDataSet(struct img_data* data, int n_images){
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2010 data set    
-    for(int i = 2; i<1379; i=i+2){
+    for(int i = 2; i<1380; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2010/" + file_names.at(i) + "\n";
-        data[index_data] = getDescriptor("./Vision_MCR/2010/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2010/" + file_names.at(i)), 2008, index_data);
+        data[index_data] = getDescriptor("./Vision_MCR/2010/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2010/" + file_names.at(i)), 2010, index_data);
         index_data++;
     }
-
     return true;
 }
 
