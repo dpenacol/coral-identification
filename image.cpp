@@ -131,6 +131,7 @@ bool getDataSet(struct img_data* data, int n_images){
     // Creating a vector of strings to save the names of the images and txt
     std::vector<std::string> file_names;
 
+
     // Reading the folder for each element and save their names in file_names
     DIR *dir;
     struct dirent *ent;
