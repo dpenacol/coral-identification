@@ -128,6 +128,7 @@ bool getDataSet(struct img_data* data, int n_images){
     DIR *dir;
     struct dirent *ent;
     int i=0;
+    int index_data = 0;
 
     if ((dir = opendir ("./Vision_MCR/2008/")) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
@@ -137,22 +138,61 @@ bool getDataSet(struct img_data* data, int n_images){
     } else {
     // Case that the directory could not be opened
         perror ("");
-        return EXIT_FAILURE;
+        return false;
     }
     // Sorting the vector of strings so it is alphabetically ordered
     std::sort(file_names.begin(), file_names.end());
-    /*
-    for(int i=0; i<1344; i++){
-        std::cout << "\n" + std::to_string(i) + ". ";
-        std::cout << file_names.at(i);
-    }*/
-    std::cout << "\n";
-    
-    int index_data = 0;
 
-    for(int i = 2; i<1342; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] " + file_names.at(i) + "\n";
+    // Obtaining the 2008 data set    
+    for(int i = 2; i<1343; i=i+2){
+        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2008/" + file_names.at(i) + "\n";
         data[index_data] = getDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), 2008, index_data);
+        index_data++;
+    }
+
+// Reading 2009 set
+    file_names.erase(file_names.begin(), file_names.end());
+
+    if ((dir = opendir ("./Vision_MCR/2009/")) != NULL) {
+        while ((ent = readdir (dir)) != NULL) {
+            file_names.push_back(std::string(ent->d_name));
+        }
+        closedir (dir);
+    } else {
+    // Case that the directory could not be opened
+        perror ("");
+        return false;
+    }
+    // Sorting the vector of strings so it is alphabetically ordered
+    std::sort(file_names.begin(), file_names.end());
+
+    // Obtaining the 2009 data set    
+    for(int i = 2; i<1391; i=i+2){
+        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2009/" + file_names.at(i) + "\n";
+        data[index_data] = getDescriptor("./Vision_MCR/2009/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2009/" + file_names.at(i)), 2008, index_data);
+        index_data++;
+    }
+
+// Reading 2010 set
+    file_names.erase(file_names.begin(), file_names.end());
+
+    if ((dir = opendir ("./Vision_MCR/2010/")) != NULL) {
+        while ((ent = readdir (dir)) != NULL) {
+            file_names.push_back(std::string(ent->d_name));
+        }
+        closedir (dir);
+    } else {
+    // Case that the directory could not be opened
+        perror ("");
+        return false;
+    }
+    // Sorting the vector of strings so it is alphabetically ordered
+    std::sort(file_names.begin(), file_names.end());
+
+    // Obtaining the 2010 data set    
+    for(int i = 2; i<1379; i=i+2){
+        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2010/" + file_names.at(i) + "\n";
+        data[index_data] = getDescriptor("./Vision_MCR/2010/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2010/" + file_names.at(i)), 2008, index_data);
         index_data++;
     }
 
