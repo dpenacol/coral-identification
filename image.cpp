@@ -122,41 +122,40 @@ bool getDataSet(struct img_data* data, int n_images){
     std::string directory = "./Vision_MCR/2008/";
 
     // Creating a vector of strings to save the names of the images and txt
-    std::vector<std::string> file_names(1342);
+    std::vector<std::string> file_names;
 
     // Reading the folder for each element and save their names in file_names
     DIR *dir;
     struct dirent *ent;
     int i=0;
+
     if ((dir = opendir ("./Vision_MCR/2008/")) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
-            file_names[i] = ent->d_name;
-            i++;
+            file_names.push_back(std::string(ent->d_name));
         }
         closedir (dir);
     } else {
     // Case that the directory could not be opened
-            perror ("");
-            return EXIT_FAILURE;
+        perror ("");
+        return EXIT_FAILURE;
     }
     // Sorting the vector of strings so it is alphabetically ordered
     std::sort(file_names.begin(), file_names.end());
     /*
-    for(int i=4; i<1342; i++){
+    for(int i=0; i<1344; i++){
         std::cout << "\n" + std::to_string(i) + ". ";
-        std::cout << file_names[i];
-    }
+        std::cout << file_names.at(i);
+    }*/
     std::cout << "\n";
-    */
-    int index_data = 0;
-    i = 4;
     
-    for(int i = 4; i<1342; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] " + file_names[i] + "\n";
-        data[index_data] = getDescriptor(file_names[i] + ".txt", getMaximumResponseFilter(file_names[i]), 2008, index_data);
+    int index_data = 0;
+
+    for(int i = 2; i<1342; i=i+2){
+        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] " + file_names.at(i) + "\n";
+        data[index_data] = getDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), 2008, index_data);
         index_data++;
     }
-    
+
     return true;
 }
 

@@ -318,17 +318,14 @@ cv::Mat getMaximumResponseFilter(std::string filename){
     // Resizing the image.
     cv::Mat img_resized(img.size().height/2,img.size().width/2, CV_8UC3, cv::Scalar(255,255,255));
     resize(img, img_resized, img_resized.size(), 0, 0, cv::INTER_CUBIC);
-    img.release();
 
     // Creating the preprocessed image.
     cv::Mat img_preprocessed(img_resized.size().height,img_resized.size().width, CV_8UC3, cv::Scalar(255,255,255));
     colorChannelStretch(img_resized, img_preprocessed, 1, 99);
-    img_resized.release();
 
     // Transforming the image to the L*a*b* color space.
     cv::Mat img_Lab(img_preprocessed.size().height,img_preprocessed.size().width, CV_8UC3, cv::Scalar(255,255,255));
     cv::cvtColor(img_preprocessed, img_Lab, cv::COLOR_BGR2Lab);
-    img_preprocessed.release();
 
     // Creating the kernels for the Maximum Response filter.
     int i;
@@ -341,7 +338,6 @@ cv::Mat getMaximumResponseFilter(std::string filename){
     // Applying the Maximum Response Filter.
     cv::Mat img_MR(img_Lab.size().height,img_Lab.size().width, CV_32FC(24));
     maximumResponseFilter(img_Lab, img_MR, kernel);
-    img_Lab.release();
 
     return img_MR;
 }
