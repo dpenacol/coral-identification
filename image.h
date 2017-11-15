@@ -14,9 +14,12 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <dirent.h>
 #include <iostream>
 #include <fstream>
 #include <string>
+
+
 
 struct keyPoint{
     cv::Point pt;
@@ -33,6 +36,8 @@ struct img_data{
 
 void testTxt(void);
 
+int str2label(std::string str);
+
 struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int index);
 // Load the information of all the clasification point from a text file, and associate 
 // an r24 vector from the Maximun Response filter.
@@ -46,13 +51,19 @@ struct img_data loadDescriptor();
 // and the associated r24 vector from a binary file.
 
 void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index);
+// Computes the K-means algorithm to each class creating a 
+// matrix with 135 textons each one with 24 values.
 
-bool getDataSet(struct img_data* data_2008, struct img_data* data_2009,struct img_data* data_2010);
+int porcentage(int index_data, int n_images);
+// Shows porcentage of completition of the getDataSet function
 
-bool getDataSet_2008(struct img_data* data_2008);
-
-bool getDataSet_2009(struct img_data* data_2008);
-
-bool getDataSet_2010(struct img_data* data_2008);
+bool getDataSet(struct img_data data[2055], int n_images);
+// Load the Data of the images and the txt of the three 2008, 2009 and 2010 sets of images.
+// The sets needs to be saved on the project folder by this structure:
+// ~/ProjectRoot
+//        /Vision_MCR
+//             /2008
+//             /2009
+//             /2010
 
 #endif

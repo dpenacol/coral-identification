@@ -17,7 +17,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <cmath>
-//#include <iostream>
+#include <iostream>
 #include <string>
 
 void getNormalizedGaussianKernel(cv::Mat kernel, float sigma);
@@ -102,7 +102,7 @@ void getMaximumResponseFilterKernels(cv::Mat kernel[38], float sigmaSmall, float
 void maximumResponseFilter(cv::Mat img_Lab, cv::Mat img_MR, cv::Mat kernel[38]);
 // Applies the Maximum Response filter to img_Lab, and saves its
 // response in img_MR. This function needs to receive the kernels
-// of the 38 filters as an input.
+// of the 31 filters as an input.
 // CONSTRAINTS:
 //      * img_Lab's depth must be CV_8UC3.
 //      * img_MR's depth must be CV_32FC(24).
