@@ -38,14 +38,14 @@ struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int
         }
         file.close();
     } else{
-        std::cout << "No se pudo abrir el archivo!" << std::endl;
+        std::cout << "Error loading "  + fileName << std::endl;
     }
     return data;
 }
 
 void saveDescriptor(struct img_data* data, int n_images){
     std::ofstream fout;
-    fout.open("svm_data.bin",std::ios::out| std::ios::binary);
+    fout.open("data_set.bin",std::ios::out| std::ios::binary);
 
     for(int i = 0; i < n_images; i++){
         fout.write((char *)&data[i], sizeof(struct img_data));
@@ -62,9 +62,9 @@ void saveDescriptor(struct img_data* data, int n_images){
 struct img_data* loadDescriptor(int n_images){
     struct img_data* data = new struct img_data[2055];
     std::ifstream fin;
-    fin.open("svm_data.bin", std::ios::in| std::ios::binary);
+    fin.open("data_set.bin", std::ios::in| std::ios::binary);
     if(fin.is_open()){
-        std::cout << "Archivo Abierto!" << std::endl;
+        std::cout << "Success loading of data_set.bin" << std::endl;
 
         for(int i = 0; i < n_images; i++){
             fin.read((char *)&data[i], sizeof(struct img_data));
@@ -77,7 +77,7 @@ struct img_data* loadDescriptor(int n_images){
         }
         fin.close();
     }else{
-        std::cout << "No se pudo abir el archivo!" << std::endl;
+        std::cout << "Error loading data_set.bin" << std::endl;
     }
     return data;
 }
@@ -97,21 +97,21 @@ int str2label(std::string str){
     */
     if(str == "CCA")
         label = 1;
-    else if(str == "Turf")
+    else if(str == "Turf" || str == "TURF")
         label = 2;
-    else if(str == "Macro")
+    else if(str == "Macro" || str == "MACRO")
         label = 3;
-    else if(str == "Sand")
+    else if(str == "Sand" || str == "SAND")
         label = 4;
-    else if(str == "Acrop")
+    else if(str == "Acrop" || str == "ACROP")
         label = 5;
-    else if(str == "Pavon")
+    else if(str == "Pavon" || str == "PAVON")
         label = 6;
-    else if(str == "Monti")
+    else if(str == "Monti" || str == "MONTI")
         label = 7;
-    else if(str == "Pocill")
+    else if(str == "Pocill" || str == "POCILL")
         label = 8;
-    else if(str == "Porit" || str == "P. Irr" || str == "P. Rus" || str == "P mass")
+    else if(str == "Porit" || str == "P. Irr" || str == "P. Rus" || str == "P mass" || str == "PORIT"|| str == "P. IRR" || str == "P. RUS" || str == "P MASS")
         label = 9;
     else
         label = 0;
@@ -143,7 +143,7 @@ bool getDataSet(struct img_data* data, int n_images){
         }
         closedir (dir);
     } else {
-    // Case that the directory could not be opened
+    // If the directory could not be opened
         perror ("");
         return false;
     }
@@ -166,7 +166,7 @@ bool getDataSet(struct img_data* data, int n_images){
         }
         closedir (dir);
     } else {
-    // Case that the directory could not be opened
+    // If the directory could not be opened
         perror ("");
         return false;
     }
@@ -189,7 +189,7 @@ bool getDataSet(struct img_data* data, int n_images){
         }
         closedir (dir);
     } else {
-    // Case that the directory could not be opened
+    // If the directory could not be opened
         perror ("");
         return false;
     }
@@ -208,7 +208,7 @@ bool getDataSet(struct img_data* data, int n_images){
 void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index){
     // Parameters of K-means algorithm
     int clusters = 15;
-    int attempts = 10;
+    int attempts = 500;
     int initial_centers = cv::KMEANS_PP_CENTERS;
 
     // Creating the structures for each class
@@ -217,7 +217,30 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
     cv::Mat centers[9];
     int row[9];
 
-    // Checking for each class label and saves the R^24 values on each class_data 
+    // Initializing each class textons matrix
+    for(int i=0; i<9; i++){
+        centers[i] = cv::Mat(15,24,CV_32FC1);        
+        row[i] = 0;
+    }
+
+    // Checking the number of labels for each class
+    for(int j=start_index; j<finish_index; j++){
+        for(int k=0; k<data[j].n_labels; k++){
+            for(int m=0; m<9; m++){
+                if(data[j].key_Point[k].type == m + 1){
+                    row[m]++;
+                }
+            }
+        }
+    }
+
+    // Initializing each class data matrix
+    for(int i=0; i<9; i++){
+        class_data[i] = cv::Mat(row[i],24,CV_32FC1);        
+        row[i] = 0;
+    }
+
+    // Saving each R^24 values on each class_data matrix
     for(int j=start_index; j<finish_index; j++){
         for(int k=0; k<data[j].n_labels; k++){
             for(int m=0; m<9; m++){
@@ -233,7 +256,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
 
     // Applying the K-means algorithm for each class_data
     for(int m=0; m<9; m++){
-        kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER,100,0.001), attempts, initial_centers, centers[m]);
+        kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER,1000,0.001), attempts, initial_centers, centers[m]);
     }
 
     // Saving the 135 textons on the dictionary
