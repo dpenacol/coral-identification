@@ -42,11 +42,11 @@ struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int
 // Load the information of all the clasification point from a text file, and associate 
 // an r24 vector from the Maximun Response filter.
 
-void saveDescriptor(struct img_data* data);
+void saveDescriptor(struct img_data* data, int n_images);
 // Save the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from the Maximum Response filter in a binary file.
 
-struct img_data* loadDescriptor();
+struct img_data* loadDescriptor(int n_images);
 // Load the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from a binary file.
 
