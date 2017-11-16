@@ -46,9 +46,13 @@ void saveDescriptor(struct img_data* data, int n_images);
 // Save the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from the Maximum Response filter in a binary file.
 
+bool saveDictionaryTextons(cv::Mat dictionary, std::string path);
+
 struct img_data* loadDescriptor(int n_images);
 // Load the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from a binary file.
+
+bool loadDictionaryTextons(cv::Mat dictionary, std::string path);
 
 void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index);
 // Computes the K-means algorithm to each class creating a 

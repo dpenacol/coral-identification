@@ -41,8 +41,18 @@ int main() {
     cv::Mat dictionaryTextons;
     dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
     int start_index = 0, finish_index = 1100;
-    getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
+    int k=0;
+    for(int i=0; i<135; i++){
+        for(int j=0; j<24; j++){
+            dictionaryTextons.at<float>(i,j) = k;
+            k++; 
+        }
+    }
+    // saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
 
+    std::cout << dictionaryTextons;
     // Freeing space of the data struct
     delete [] data;
 

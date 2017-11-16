@@ -9,5 +9,4 @@ Coral_Identification*
 .vs*
 Vision_MCR*
 svm_data.bin
-data_set*
-data_set.bin
+*.bin

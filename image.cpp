@@ -271,7 +271,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
     }
 }
 
-int saveDictionaryTextons(cv::Mat dictionary, std::string path){
+bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
 
     int matWidth = dictionary.size().width;
     int matHeight = dictionary.size().height;
