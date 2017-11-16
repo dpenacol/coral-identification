@@ -248,7 +248,49 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
     }
 }
 
-void saveDictionaryTextons(cv::Mat Dictionary){
-    int n_textons = 135;
-    std::ofstream fout;
+int saveDictionaryTextons(cv::Mat dictionary, std::string path){
+
+    int matWidth = dictionary.size().width;
+    int matHeight = dictionary.size().height;
+
+    std::ofstream file(path.c_str(), std::ios::out | std::ios::binary );
+    if (!file)
+        return false;
+ 
+    //file.write((const char*) &matWidth, sizeof(matWidth));
+    //file.write((const char*) &matHeight, sizeof(matHeight));
+
+    int n = 0;
+    for(int j=0; j<9; j++){
+        for(int k=0; k<15; k++){
+            for(int m=0; m<24; m++){
+                file.write((const char*) &dictionary.at<float>(n,m), sizeof(dictionary.at<float>(n,m)));
+                //dictionaryTextons.at<float>(n,m) = class_data[j].at<float>(k,m);
+            }
+            n++;
+        }
+    }
+    std::cout << "Writing CV_32F image" << std::endl;
+    file.close();
+
+    return true;
+}
+
+bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
+
+    std::ifstream file(path.c_str(), std::ios::in | std::ios::binary );
+    if (!file)
+        return false;
+
+    int n = 0;
+    for(int j=0; j<9; j++){
+        for(int k=0; k<15; k++){
+            for(int m=0; m<24; m++){
+                file.read((char*) &dictionary.at<float>(n,m), sizeof(dictionary.at<float>(n,m)));
+                //dictionaryTextons.at<float>(n,m) = class_data[j].at<float>(k,m);
+            }
+            n++;
+        }
+    }
+    return true;
 }
