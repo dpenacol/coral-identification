@@ -250,3 +250,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
     }
 }
 
+void saveDictionaryTextons(cv::Mat Dictionary){
+    int n_textons = 135;
+    std::ofstream fout;
+}
