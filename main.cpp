@@ -23,24 +23,25 @@ int main() {
 
     // Applying the Maximum Response Filter to each image of the 2008, 2009 and
     // 2010 set. Then reads each image info .txt to save the results on data structure
-    getDataSet(data, n_images);
+    // getDataSet(data, n_images);
 
     // save the image data in a binary file
-    saveDescriptor(data, n_images);
+    // saveDescriptor(data, n_images);
 
     // load the image data from a binary file
     //data = loadDescriptor(n_images);
 
     // print test, first the coordinates and labels, next an r24 vector information
-    int image = 20;
+    int image = 99;
     for(int i = 0; i<data[image].n_labels ;i++){
         std::cout << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].type << std::endl;
     }
-    std::cout << "\n----------------------------------------------------------\n";
-    image = 99;
-    for(int i = 0; i<data[image].n_labels ;i++){
-        std::cout << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].type << std::endl;
-    }
+    
+    // Obtaining the textons from a group of images of the data
+    cv::Mat dictionaryTextons;
+    dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
+    int start_index = 0, finish_index = 1100;
+    getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
 
     // Freeing space of the data struct
     delete [] data;
