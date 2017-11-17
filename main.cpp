@@ -47,10 +47,10 @@ int main() {
     dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
     int start_index = 0, finish_index = 1100;
 
-    getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
+    //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
 
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
-    //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
     // Prueba de getNearestTexton()
     float ejem[24];
