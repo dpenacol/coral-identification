@@ -12,10 +12,16 @@
 
 struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int index){
     struct img_data data;
+    int n_lables;
     data.index = 0;
     data.year = 0;
-    data.n_labels = 200;
-
+    if(year == 2008 || year == 2009){
+        n_lables = 200;
+    }
+    if(year == 2010){
+        n_lables = 199;
+    }
+    data.n_labels = n_lables;
     std::ifstream file(fileName);
     if (file.is_open()){
         int i;
@@ -23,7 +29,7 @@ struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int
         std::getline(file,str);
         data.index = index;
         data.year = year;
-        for(i=0; i<200; i++){        
+        for(i=0; i<n_lables; i++){        
             file >> str;
             data.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str; 
@@ -157,9 +163,11 @@ bool getDataSet(struct img_data* data, int n_images){
         index_data++;
     }
 
-// Reading 2009 set
+    // Deleting the names of the set
     file_names.erase(file_names.begin(), file_names.end());
 
+// Reading 2009 set
+    // Directory of the 2009 set
     if ((dir = opendir ("./Vision_MCR/2009/")) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
             file_names.push_back(std::string(ent->d_name));
@@ -180,9 +188,11 @@ bool getDataSet(struct img_data* data, int n_images){
         index_data++;
     }
 
-// Reading 2010 set
+    // Deleting the names of the set
     file_names.erase(file_names.begin(), file_names.end());
 
+// Reading 2010 set
+    // Directory of the 2010 set
     if ((dir = opendir ("./Vision_MCR/2010/")) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
             file_names.push_back(std::string(ent->d_name));
@@ -202,6 +212,10 @@ bool getDataSet(struct img_data* data, int n_images){
         data[index_data] = getDescriptor("./Vision_MCR/2010/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2010/" + file_names.at(i)), 2010, index_data);
         index_data++;
     }
+
+    // Deleting the names of the set
+    file_names.erase(file_names.begin(), file_names.end());
+
     return true;
 }
 
