@@ -70,4 +70,6 @@ bool getDataSet(struct img_data* data, int n_images);
 //             /2009
 //             /2010
 
+int getNearestTexton(cv::Mat dictionaryTextons, float r24[24]);
+
 #endif

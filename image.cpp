@@ -253,7 +253,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
         class_data[i] = cv::Mat(row[i],24,CV_32FC1);        
         row[i] = 0;
     }
-
+    float x;
     // Saving each R^24 values on each class_data matrix
     for(int j=start_index; j<finish_index; j++){
         for(int k=0; k<data[j].n_labels; k++){
@@ -270,6 +270,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
 
     // Applying the K-means algorithm for each class_data
     for(int m=0; m<9; m++){
+        std::cout << "[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of " + std::to_string(m + 1) + " class.\n";
         kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER,1000,0.001), attempts, initial_centers, centers[m]);
     }
 
@@ -283,6 +284,28 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], 
             n++;
         }
     }
+}
+
+int getNearestTexton(cv::Mat dictionaryTextons, float r24[24]){
+    float nearest_distance = 0;
+    int nearest_texton = 0;
+    float euclidean = 0;
+    
+    for(int i=0; i<135; i++){
+        for(int j=0; j<24; j++){
+            euclidean = euclidean + pow(r24[j] - dictionaryTextons.at<float>(i,j), 2);
+        }
+        if(i==0){
+            nearest_distance = euclidean;
+        }
+        else if(euclidean < nearest_distance){
+            nearest_distance = euclidean;
+            nearest_texton = i;
+        }
+        euclidean = 0;
+    }
+
+    return nearest_texton;
 }
 
 bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
