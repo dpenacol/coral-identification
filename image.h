@@ -21,27 +21,27 @@
 
 struct keyPoint{
     cv::Point pt;
-    int8_t type;
+    int type;
     float r24[24];
 };
 
 struct img_data{
-    uint16_t index;
-    uint16_t year;
-    uint16_t n_labels;
+    int index;
+    int year;
+    int n_labels;
     struct keyPoint key_Point[maxKeypoints];
 };
 
 struct keyPointHistogram{
     cv::Point pt;
-    int8_t type;
+    int type;
     float histogram[540];
 };
 
 struct img_dataHistogram{
-    uint16_t index;
-    uint16_t year;
-    uint16_t n_labels;
+    int index;
+    int year;
+    int n_labels;
     struct keyPointHistogram key_Point[maxKeypoints];
 };
 
