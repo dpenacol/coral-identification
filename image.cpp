@@ -468,25 +468,28 @@ void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key
             histograms[j][i] = 0;
         }
     }
-    // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
-    for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
-        for(int i=key_Point->pt.x - hSize[3]; i<key_Point->pt.x + hSize[3]+1; i++){
-            // if the study area is fully inside the image
-            if((j > 0) && (j < img_MR.size().height) && (i > 0) && (i < img_MR.size().width)){
-                for(int k=0; k<24; k++){
-                    r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
+    // if the study area is fully inside the image
+    if(key_Point->pt.x - hSize[3]>0 && key_Point->pt.x + hSize[3]+1<img_MR.size().width){
+        if(key_Point->pt.y - hSize[3]>0 && key_Point->pt.y + hSize[3]+1<img_MR.size().height){
+                // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
+                for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
+                    for(int i=key_Point->pt.x - hSize[3]; i<key_Point->pt.x + hSize[3]+1; i++){
+                        for(int k=0; k<24; k++){
+                                r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
+                            texton = getNearestTexton(dictionary, r24);
+                            p221.at<int>(x,y) = texton;
+                            x++;
+                            //p221.at<int>(x,y) = -1; 
+                        }
+                        x = 0;
+                        y++;
+                    }
                 }
-                texton = getNearestTexton(dictionary, r24);
-                p221.at<int>(x,y) = texton;
-                x++;
-            } else{
-                p221.at<int>(x,y) = -1;
-            }
-        }
-        x = 0;
-        y++;
-    }
-
+        }else
+            return;
+    }else
+        return;
+    
     // Obtaining the histograms of textons 
     getHistogramTextons(p221, histograms, hSize);
 
