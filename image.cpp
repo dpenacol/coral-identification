@@ -10,9 +10,9 @@
 #include "filters.h"
 #include "histogram.h"
 
-struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, int index){
+struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, uint16_t year, uint16_t index){
     struct img_data data;
-    int n_lables;
+    uint16_t n_lables;
     data.index = 0;
     data.year = 0;
     if(year == 2008 || year == 2009){
@@ -24,7 +24,7 @@ struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, in
     data.n_labels = n_lables;
     std::ifstream file(fileName);
     if (file.is_open()){
-        int i;
+        uint16_t i, j;
         std::string str;
         std::getline(file,str);
         data.index = index;
@@ -38,7 +38,7 @@ struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, in
             data.key_Point[i].type = str2label(str);
         }
         for(i=0; i< data.n_labels ; i++){
-            for(int j=0; j<24; j++){
+            for(j=0; j<24; j++){
                 data.key_Point[i].r24[j] = img_MR.at<cv::Vec<float, 24>>(data.key_Point[i].pt.x, data.key_Point[i].pt.y)[j];
             }
         }
@@ -49,15 +49,16 @@ struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, in
     return data;
 }
 
-void saveDescriptor(struct img_data* data, int n_images){
+void saveDescriptor(struct img_data* data, uint16_t n_images){
     std::ofstream fout;
     fout.open("data_set.bin",std::ios::out| std::ios::binary);
-
-    for(int i = 0; i < n_images; i++){
+    uint16_t i, j;
+    uint8_t k;
+    for(i = 0; i < n_images; i++){
         fout.write((char *)&data[i], sizeof(struct img_data));
-        for(int j=0; j<data[i].n_labels; j++){
+        for(j=0; j<data[i].n_labels; j++){
             fout.write((char *)&data[i].key_Point[j], sizeof(struct keyPoint));
-            for(int k=0; k<24; k++){
+            for(k=0; k<24; k++){
                 fout.write((char *)&data[i].key_Point[j].r24[k], sizeof(data[i].key_Point[j].r24[k]));
             }
         }
@@ -65,18 +66,20 @@ void saveDescriptor(struct img_data* data, int n_images){
     fout.close();
 }
 
-struct img_data* loadDescriptor(int n_images){
+struct img_data* loadDescriptor(uint16_t n_images){
     struct img_data* data = new struct img_data[2055];
     std::ifstream fin;
     fin.open("data_set.bin", std::ios::in| std::ios::binary);
+    uint16_t i, j;
+    uint8_t k;
     if(fin.is_open()){
         std::cout << "Loading data_set.bin..." << std::endl;
 
-        for(int i = 0; i < n_images; i++){
+        for(i = 0; i < n_images; i++){
             fin.read((char *)&data[i], sizeof(struct img_data));
-            for(int j=0; j<data[i].n_labels; j++){
+            for(j=0; j<data[i].n_labels; j++){
                 fin.read((char *)&data[i].key_Point[j], sizeof(struct keyPoint));
-                for(int k=0; k<24; k++){
+                for(k=0; k<24; k++){
                     fin.read((char *)&data[i].key_Point[j].r24[k], sizeof(data[i].key_Point[j].r24[k]));
                 }
             }
@@ -89,8 +92,8 @@ struct img_data* loadDescriptor(int n_images){
     return data;
 }
 
-int str2label(std::string str){
-    int label = 0;
+uint8_t str2label(std::string str){
+    uint8_t label = 0;
     /*
     1 = CCA
     2 = Turf
@@ -126,11 +129,11 @@ int str2label(std::string str){
 }
 
 
-int porcentage(int index_data, int n_images){
+uint8_t porcentage(uint16_t index_data, uint16_t n_images){
     return index_data*100/n_images;
 }
 
-bool getDataSet(struct img_data* data, int n_images){
+bool getDataSet(struct img_data* data, uint16_t n_images){
 // Reading 2008 set
     // Directory of the 2008 set
     std::string directory = "./Vision_MCR/2008/";
@@ -141,8 +144,8 @@ bool getDataSet(struct img_data* data, int n_images){
     // Reading the folder for each element and save their names in file_names
     DIR *dir;
     struct dirent *ent;
-    int i=0;
-    int index_data = 0;
+    uint16_t i;
+    uint16_t index_data = 0;
 
     if ((dir = opendir ("./Vision_MCR/2008/")) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
@@ -158,7 +161,7 @@ bool getDataSet(struct img_data* data, int n_images){
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2008 data set    
-    for(int i = 2; i<1344; i=i+2){
+    for(i = 2; i<1344; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2008/" + file_names.at(i) + "\n";
         data[index_data] = getDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), 2008, index_data);
         index_data++;
@@ -183,7 +186,7 @@ bool getDataSet(struct img_data* data, int n_images){
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2009 data set    
-    for(int i = 2; i<1392; i=i+2){
+    for(i = 2; i<1392; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2009/" + file_names.at(i) + "\n";
         data[index_data] = getDescriptor("./Vision_MCR/2009/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2009/" + file_names.at(i)), 2009, index_data);
         index_data++;
@@ -208,7 +211,7 @@ bool getDataSet(struct img_data* data, int n_images){
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2010 data set    
-    for(int i = 2; i<1380; i=i+2){
+    for(i = 2; i<1380; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2010/" + file_names.at(i) + "\n";
         data[index_data] = getDescriptor("./Vision_MCR/2010/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2010/" + file_names.at(i)), 2010, index_data);
         index_data++;
@@ -220,28 +223,30 @@ bool getDataSet(struct img_data* data, int n_images){
     return true;
 }
 
-void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055], int start_index, int finish_index){
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055], uint16_t start_index, uint16_t finish_index){
     // Parameters of K-means algorithm
-    int clusters = 15;
-    int attempts = 200;
-    int initial_centers = cv::KMEANS_RANDOM_CENTERS;
+    uint8_t clusters = 15;
+    uint16_t attempts = 200;
+    uint32_t initial_centers = cv::KMEANS_RANDOM_CENTERS;
 
     // Creating the structures for each class
     cv::Mat class_data[9];
     cv::Mat labels[9];
     cv::Mat centers[9];
-    int row[9];
+    uint32_t row[9];
 
     // Initializing each class textons matrix
-    for(int i=0; i<9; i++){
+    uint16_t i, j, k;
+    uint8_t m, n;
+    for(i=0; i<9; i++){
         centers[i] = cv::Mat(15,24,CV_32FC1);        
         row[i] = 0;
     }
 
     // Checking the number of labels for each class
-    for(int j=start_index; j<finish_index; j++){
-        for(int k=0; k<data[j].n_labels; k++){
-            for(int m=0; m<9; m++){
+    for(j=start_index; j<finish_index; j++){
+        for(k=0; k<data[j].n_labels; k++){
+            for(m=0; m<9; m++){
                 if(data[j].key_Point[k].type == m + 1){
                     row[m]++;
                 }
@@ -250,17 +255,17 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055],
     }
 
     // Initializing each class data matrix
-    for(int i=0; i<9; i++){
+    for(i=0; i<9; i++){
         class_data[i] = cv::Mat(row[i],24,CV_32FC1);        
         row[i] = 0;
     }
 
     // Saving each R^24 values on each class_data matrix
-    for(int j=start_index; j<finish_index; j++){
-        for(int k=0; k<data[j].n_labels; k++){
-            for(int m=0; m<9; m++){
+    for(j=start_index; j<finish_index; j++){
+        for(k=0; k<data[j].n_labels; k++){
+            for(m=0; m<9; m++){
                 if(data[j].key_Point[k].type == m + 1){
-                    for(int n=0; n<24; n++){
+                    for(n=0; n<24; n++){
                         class_data[m].at<float>(row[m],n) = data[j].key_Point[k].r24[n];
                     }
                     row[m]++;
@@ -270,16 +275,16 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055],
     }
 
     // Applying the K-means algorithm for each class_data
-    for(int m=0; m<9; m++){
+    for(m=0; m<9; m++){
         std::cout << "[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of " + std::to_string(m + 1) + " class.\n";
         kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 1000, 0.001), attempts, initial_centers, centers[m]);
     }
 
     // Saving the 135 textons on the dictionary
-    int n = 0;
-    for(int j=0; j<9; j++){
-        for(int k=0; k<15; k++){
-            for(int m=0; m<24; m++){
+    n = 0;
+    for(j=0; j<9; j++){
+        for(k=0; k<15; k++){
+            for(m=0; m<24; m++){
                 dictionaryTextons.at<float>(n,m) = class_data[j].at<float>(k,m);
             }
             n++;
@@ -287,13 +292,14 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055],
     }
 }
 
-int getNearestTexton(cv::Mat dictionaryTextons, float r24[24]){
+uint8_t getNearestTexton(cv::Mat dictionaryTextons, float r24[24]){
     float nearest_distance = 0;
-    int nearest_texton = 0;
+    uint8_t nearest_texton = 0;
     float euclidean = 0;
-    
-    for(int i=0; i<135; i++){
-        for(int j=0; j<24; j++){
+    uint8_t i, j;
+
+    for(i=0; i<135; i++){
+        for(j=0; j<24; j++){
             euclidean = euclidean + pow(r24[j] - dictionaryTextons.at<float>(i,j), 2);
         }
         if(i==0){
@@ -311,9 +317,6 @@ int getNearestTexton(cv::Mat dictionaryTextons, float r24[24]){
 
 bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
 
-    int matWidth = dictionary.size().width;
-    int matHeight = dictionary.size().height;
-
     std::ofstream file(path.c_str(), std::ios::out | std::ios::binary );
     if (!file)
         return false;
@@ -321,10 +324,10 @@ bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
     //file.write((const char*) &matWidth, sizeof(matWidth));
     //file.write((const char*) &matHeight, sizeof(matHeight));
 
-    int n = 0;
-    for(int j=0; j<9; j++){
-        for(int k=0; k<15; k++){
-            for(int m=0; m<24; m++){
+    uint8_t j, k, m, n = 0;
+    for(j=0; j<9; j++){
+        for(k=0; k<15; k++){
+            for(m=0; m<24; m++){
                 file.write((const char*) &dictionary.at<float>(n,m), sizeof(dictionary.at<float>(n,m)));
                 //dictionaryTextons.at<float>(n,m) = class_data[j].at<float>(k,m);
             }
@@ -345,10 +348,10 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
         return false;
     }
     std::cout << "Loading dictionary.bin..." << std::endl;
-    int n = 0;
-    for(int j=0; j<9; j++){
-        for(int k=0; k<15; k++){
-            for(int m=0; m<24; m++){
+    uint8_t j, k, m, n = 0;
+    for(j=0; j<9; j++){
+        for(k=0; k<15; k++){
+            for(m=0; m<24; m++){
                 file.read((char*) &dictionary.at<float>(n,m), sizeof(dictionary.at<float>(n,m)));
                 //dictionaryTextons.at<float>(n,m) = class_data[j].at<float>(k,m);
             }
@@ -359,7 +362,7 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
     return true;
 }
 
-bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n_images){
+bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, uint16_t n_images){
 // Reading 2008 set
     // Directory of the 2008 set
     std::string directory = "./Vision_MCR/2008/";
@@ -370,8 +373,8 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     // Reading the folder for each element and save their names in file_names
     DIR *dir;
     struct dirent *ent;
-    int i=0;
-    int index_data = 0;
+    uint16_t i=0;
+    uint16_t index_data = 0;
 
     if ((dir = opendir ("./Vision_MCR/2008/")) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
@@ -387,7 +390,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2008 data set    
-    for(int i = 2; i<4; i=i+2){
+    for(i = 2; i<4; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Image: ./Vision_MCR/2008/" + file_names.at(i) + "\n";
         dataH[index_data] = getHistogramDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), dictionary, 2008, index_data);
         index_data++;
@@ -399,11 +402,13 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     return true;
 }
 
-struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, int year, int index){
+struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, uint16_t year, uint16_t index){
     struct img_dataHistogram data;
-    cv::Mat img_Texton(img_MR.size().width, img_MR.size().height, CV_8UC1, 1);
-    int n_labels;
-    int n_overflow =0, i;
+    cv::Mat img_Texton(img_MR.size().width, img_MR.size().height, CV_8SC1);
+    uint16_t n_labels;
+    uint16_t n_overflow =0;
+    uint16_t i, j;
+    uint8_t k;
     float r24[24];
     data.index = 0;
     data.year = 0;
@@ -420,8 +425,8 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
     // Get the nearest texton for all the vectors in img_MR
     // And saving the texton number in img_Texton
     for(i=0; i<img_MR.size().width; i++){
-        for(int j=0; j<img_MR.size().height; j++){
-            for(int k=0; k<24; k++){
+        for(j=0; j<img_MR.size().height; j++){
+            for(k=0; k<24; k++){
                 r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
             }
             img_Texton.at<int8_t>(i, j) = getNearestTexton(dictionary, r24);
@@ -475,17 +480,17 @@ void getPatchs(cv::Mat img_Texton, cv::Mat dictionary, struct keyPointHistogram*
 
     cv::Mat p221(221, 221, CV_8SC1, 0);
 
-    int histograms[4][135];
-    int x = 0, y = 0;
-    int texton = -1;
+    uint16_t histograms[4][135];
+    uint16_t x = 0, y = 0;
+    uint16_t i, j;
     // Half Size (height or width of rectangle) of study areas
-    int hSize[4] = {10, 30, 60, 110};
+    uint8_t hSize[4] = {10, 30, 60, 110};
 
     //if(key_Point->pt.x - hSize[3]>0 && key_Point->pt.x + hSize[3]+1<img_Texton.size().width){
         //if(key_Point->pt.y - hSize[3]>0 && key_Point->pt.y + hSize[3]+1<img_Texton.size().height){
             // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
-            for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
-                for(int i=key_Point->pt.x - hSize[3]; i<key_Point->pt.x + hSize[3]+1; i++){
+            for(j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
+                for(i=key_Point->pt.x - hSize[3]; i<key_Point->pt.x + hSize[3]+1; i++){
                     // if the study area is fully inside the image
                     if((j > 0) && (j < img_Texton.size().height) && (i > 0) && (i < img_Texton.size().width)){
                         p221.at<int8_t>(x,y) = img_Texton.at<int8_t>(i, j);
@@ -506,8 +511,8 @@ void getPatchs(cv::Mat img_Texton, cv::Mat dictionary, struct keyPointHistogram*
     //    return;
     //}
     // Initializing the histograms
-    for(int j=0; j<4; j++){
-        for(int i=0; i<135; i++){
+    for(j=0; j<4; j++){
+        for(i=0; i<135; i++){
             histograms[j][i] = 0;
         }
     }
@@ -518,38 +523,40 @@ void getPatchs(cv::Mat img_Texton, cv::Mat dictionary, struct keyPointHistogram*
     normalizeHistogramsTextons(histograms, key_Point->histogram);
 }
 
-void getHistogramTextons(cv::Mat img, int histogram[][135], int hSize[4]){
-    int max = 0;
-    int center = hSize[3];
+void getHistogramTextons(cv::Mat img, uint16_t histogram[][135], uint8_t hSize[4]){
+    uint16_t max = 0;
+    uint8_t center = hSize[3];
+    uint16_t j, k;
+    uint8_t n;
     
     // Computing the histogram
-    for(int j= center - hSize[3]; j< center + hSize[3] + 1; j++){
-        for(int k=center - hSize[3]; k<center + hSize[3] + 1; k++){
+    for(j= center - hSize[3]; j< center + hSize[3] + 1; j++){
+        for(k=center - hSize[3]; k<center + hSize[3] + 1; k++){
             if(img.at<int8_t>(j,k)!=-1){
                 // For patch 21, 61 and 121
-                for(int n=0; n<3; n++){
+                for(n=0; n<3; n++){
                     if(j < center + hSize[n] + 1 && j > center - hSize[n] && k < center + hSize[n] + 1 && k > center - hSize[n])
                         histogram[n][img.at<int8_t>(j,k)] += 1;
                 }
                 // For patch 221
-                histogram[3][img.at<int>(j,k)] += 1;
+                histogram[3][img.at<uint16_t>(j,k)] += 1;
             }
         }
     }
 
 }
 
-void normalizeHistogramsTextons(int histograms[][135] , float histogram[540]){
-    int max = 0;
-    int aux = 0;
-
+void normalizeHistogramsTextons(uint16_t histograms[][135] , float histogram[540]){
+    uint16_t max = 0;
+    uint16_t aux = 0;
+    uint8_t i, j;
     // Normalizing each histogram and then saving them to the histogram array
-    for(int i=0; i<4; i++){
-        for(int j=0; j<135; j++){
+    for(i=0; i<4; i++){
+        for(j=0; j<135; j++){
             if(histograms[i][j] > max)
                 max = histograms[i][j];
         }
-        for(int j=0; j<135; j++){
+        for(j=0; j<135; j++){
             histogram[aux] = (float)histograms[i][j]/(float)max;
             aux++;
         }
