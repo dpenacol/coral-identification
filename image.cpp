@@ -271,7 +271,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055],
 
     // Applying the K-means algorithm for each class_data
     for(int m=0; m<9; m++){
-        std::cout << "[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of " + std::to_string(m + 1) + " class.\n";
+        std::cout << "[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of the " + std::to_string(m + 1) + " class.\n";
         kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 1000, 0.001), attempts, initial_centers, centers[m]);
     }
 
@@ -402,6 +402,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
 struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, int year, int index){
     struct img_dataHistogram data;
     int n_labels;
+    int n_overflow =0;
     data.index = 0;
     data.year = 0;
     
@@ -431,13 +432,15 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             if(data.key_Point[i].type != 0){
                 if(i % 20 == 0)
                     std::cout << "     [" + std::to_string(porcentage(i, data.n_labels)) + '%' + "] Obtaining histograms of textons...\n";
-                getPatchs(img_MR, dictionary, &data.key_Point[i]);
+                getPatchs(img_MR, dictionary, &data.key_Point[i], &n_overflow);
             }
         }
         file.close();
     } else{
         std::cout << "Error loading "  + fileName << std::endl;
     }
+    
+    std::cout << "Number of points out of the image: " << n_overflow << "---------------" << std::endl;
     return data;
 }
 
@@ -452,10 +455,10 @@ int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch){
     return n_overflows;
 }
 
-void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point){
+void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point, int* n_overflow){
 
     cv::Mat p221(221, 221, CV_32SC1);
-
+    
     float r24[24];
     int histograms[4][135];
     int x = 0, y = 0;
@@ -463,40 +466,45 @@ void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key
     // Half Size (height or width of rectangle) of study areas
     int hSize[4] = {10, 30, 60, 110};
 
+    if(key_Point->pt.x - hSize[3]>0 && key_Point->pt.x + hSize[3]+1<img_MR.size().width){
+        if(key_Point->pt.y - hSize[3]>0 && key_Point->pt.y + hSize[3]+1<img_MR.size().height){
+            // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
+            for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
+                for(int i=key_Point->pt.x - hSize[3]; i<key_Point->pt.x + hSize[3]+1; i++){
+                    // if the study area is fully inside the image
+                    if((j > 0) && (j < img_MR.size().height) && (i > 0) && (i < img_MR.size().width)){
+                        for(int k=0; k<24; k++){
+                            r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
+                        }
+                        texton = getNearestTexton(dictionary, r24);
+                        p221.at<int>(x,y) = texton;
+                        x++;
+                    } else{
+                        p221.at<int>(x,y) = -1;
+                    }
+                }
+                x = 0;
+                y++;
+            }
+        }else {
+            n_overflow++;
+            key_Point->type = 0;
+            return; 
+        }
+    }else {
+        n_overflow++;
+        key_Point->type = 0;
+        return;
+    }
     // Initializing the histograms
     for(int j=0; j<4; j++){
         for(int i=0; i<135; i++){
             histograms[j][i] = 0;
         }
     }
-    // if the study area is fully inside the image
-    if(key_Point->pt.x - hSize[3]>0 && key_Point->pt.x + hSize[3]+1<img_MR.size().width){
-        if(key_Point->pt.y - hSize[3]>0 && key_Point->pt.y + hSize[3]+1<img_MR.size().height){
-                // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
-                for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
-                    for(int i=key_Point->pt.x - hSize[3]; i<key_Point->pt.x + hSize[3]+1; i++){
-                        for(int k=0; k<24; k++){
-                                r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
-                            texton = getNearestTexton(dictionary, r24);
-                            p221.at<int>(x,y) = texton;
-                            x++;
-                            //p221.at<int>(x,y) = -1; 
-                        }
-                        x = 0;
-                        y++;
-                    }
-                }
-        }else{
-            key_Point->type = 0;
-            return;
-        }
-    }else{
-        key_Point->type = 0;
-        return;
-    }
-    // Obtaining the histograms of textons 
-    getHistogramTextons(p221, histograms, hSize);
 
+    // Obtaining the histograms of textons for each patch applied
+    getHistogramTextons(p221, histograms, hSize);
     // Normalizing the histograms and saving them in the structure
     normalizeHistogramsTextons(histograms, key_Point->histogram);
 }
