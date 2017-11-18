@@ -404,6 +404,7 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
     int n_labels;
     data.index = 0;
     data.year = 0;
+    
     if(year == 2008 || year == 2009){
         n_labels = 200;
     }
@@ -427,6 +428,7 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             data.key_Point[i].type = str2label(str);
         }
         for(i=0; i< data.n_labels ; i++){
+            data.key_Point[i].histogram[0] = -1;
             if(data.key_Point[i].type != 0){
                 if(i % 20 == 0)
                     std::cout << "     [" + std::to_string(porcentage(i, data.n_labels)) + '%' + "] Obtaining histograms of textons...\n";
@@ -453,23 +455,33 @@ int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch){
 
 void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point){
 
-    cv::Mat patchs[4];
-    cv::Mat p21(21, 21, CV_32SC1);
-    cv::Mat p61(61, 61, CV_32SC1);
-    cv::Mat p121(121, 121, CV_32SC1);
     cv::Mat p221(221, 221, CV_32SC1);
 
-    patchs[0] = p21;
-    patchs[1] = p61;
-    patchs[2] = p121;
-    patchs[3] = p221;
-    
     float r24[24];
     int histograms[4][135];
     int x = 0, y = 0;
     int texton = -1;
     // Half Size (height or width of rectangle) of study areas
     int hSize[4] = {10, 30, 60, 110};
+
+    // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
+    for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
+        for(int i=key_Point->pt.x - hSize[3]; i<key_Point->pt.x + hSize[3]+1; i++){
+            // if the study area is fully inside the image
+            if((j > 0) && (j < img_MR.size().height) && (i > 0) && (i < img_MR.size().width)){
+                for(int k=0; k<24; k++){
+                    r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
+                }
+                texton = getNearestTexton(dictionary, r24);
+                p221.at<int>(x,y) = texton;
+                x++;
+            } else{
+                p221.at<int>(x,y) = -1;
+            }
+        }
+        x = 0;
+        y++;
+    }
 
     // Initializing the histograms
     for(int i=0; i<135; i++){
@@ -479,40 +491,32 @@ void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key
         histograms[3][i] = 0;
     }
 
-    // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
-    for(int n=0; n<4; n++){
-        for(int j=key_Point->pt.y - hSize[n]; j<key_Point->pt.y + hSize[n]+1; j++){
-            for(int i=key_Point->pt.x - hSize[n]; i<key_Point->pt.x + hSize[n]+1; i++){
-                // if the study area is fully inside the image
-                if((j > -hSize[n] || j < (img_MR.size().height - hSize[n]+1)) && (i > -hSize[n] || i < (img_MR.size().width-hSize[n]+1))){
-                    for(int k=0; k<24; k++){
-                        r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
-                    }
-                    texton = getNearestTexton(dictionary, r24);
-                    patchs[n].at<int>(x,y) = texton;
-                    x++;
-                }
-            }
-            x = 0;
-            y++;
-        }
-        x = 0;
-        y = 0;
-        // Obtaining the histograms of textons for each patch applied
-        getHistogramTextons(patchs[n], histograms[n]);
-    }
+    // Obtaining the histograms of textons 
+    getHistogramTextons(p221, histograms, hSize);
+
     // Normalizing the histograms and saving them in the structure
     normalizeHistogramsTextons(histograms, key_Point->histogram);
 }
 
-void getHistogramTextons(cv::Mat img, int histogram[135]){
+void getHistogramTextons(cv::Mat img, int histogram[][135], int hSize[4]){
     int max = 0;
+    int center = hSize[3];
+    
     // Computing the histogram
-    for(int i=0; i<img.size().height; i++){
-        for(int j=0; j<img.size().width; j++){
-            histogram[img.at<int>(i,j)] += 1;
+    for(int j= center - hSize[3]; j< center + hSize[3] + 1; j++){
+        for(int k=center - hSize[3]; k<center + hSize[3] + 1; k++){
+            if(img.at<int>(j,k)!=-1){
+                // For patch 21, 61 and 121
+                for(int n=0; n<3; n++){
+                    if(j < center + hSize[n] + 1 && j > center - hSize[n] && k < center + hSize[n] + 1 && k > center - hSize[n])
+                        histogram[n][img.at<int>(j,k)] += 1;
+                }
+                // For patch 221
+                histogram[3][img.at<int>(j,k)] += 1;
+            }
         }
     }
+
 }
 
 void normalizeHistogramsTextons(int histograms[][135] , float histogram[540]){
