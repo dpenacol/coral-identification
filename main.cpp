@@ -32,15 +32,11 @@ int main() {
     data = loadDescriptor(n_images);
 
     // print test, first the coordinates and labels, next an r24 vector information
-    /*int image = 0;
+    int image = 0;
     for(int i = 0; i<data[image].n_labels ;i++){
         std::cout << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].type << std::endl;
     }
      std::cout << "\n------------------------------------------------\n";
-    image =2055;
-    for(int i = 0; i<data[image].n_labels ;i++){
-        std::cout << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].type << std::endl;
-    }*/
     
     // Obtaining the textons from a group of images of the data
     cv::Mat dictionaryTextons;
@@ -59,9 +55,9 @@ int main() {
 
     getDataHistogram(dataH, dictionaryTextons, n_images);
 
-    for(int i=0; i<540; i++){
-        std::cout << dataH->key_Point[0].histogram[i] << "\n";
-    }
+    /*for(int i=0; i<540; i++){
+        std::cout << dataH->key_Point[1].histogram[i] << "\n";
+    }*/
 
     // Freeing space of the data struct
     delete [] data;
