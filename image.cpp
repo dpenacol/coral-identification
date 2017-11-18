@@ -275,8 +275,8 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055],
     }
 
     // Applying the K-means algorithm for each class_data
-    for(m=0; m<9; m++){
-        std::cout << "[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of " + std::to_string(m + 1) + " class.\n";
+    for(int m=0; m<9; m++){
+        std::cout << "[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of the " + std::to_string(m + 1) + " class.\n";
         kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 1000, 0.001), attempts, initial_centers, centers[m]);
     }
 
@@ -449,8 +449,6 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
         }
         for(i=0; i< data.n_labels ; i++){
             if(data.key_Point[i].type != 0){
-                if(i % 20 == 0)
-                    std::cout << "     [" + std::to_string(porcentage(i, data.n_labels)) + '%' + "] Obtaining histograms of textons...\n";
                 getPatchs(img_Texton, dictionary, &data.key_Point[i]);
                 if(data.key_Point[i].type==0)
                     n_overflow++;
@@ -460,8 +458,6 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
     } else{
         std::cout << "Error loading "  + fileName << std::endl;
     }
-    
-    std::cout << "Number of points out of the image: " << n_overflow << "---------------" << std::endl;
     return data;
 }
 
@@ -478,7 +474,7 @@ int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch){
 
 void getPatchs(cv::Mat img_Texton, cv::Mat dictionary, struct keyPointHistogram* key_Point){
 
-    cv::Mat p221(221, 221, CV_8SC1, 0);
+    cv::Mat p221(221, 221, CV_8SC1, cv::Scalar(0));
 
     uint16_t histograms[4][135];
     uint16_t x = 0, y = 0;
@@ -489,18 +485,18 @@ void getPatchs(cv::Mat img_Texton, cv::Mat dictionary, struct keyPointHistogram*
     //if(key_Point->pt.x - hSize[3]>0 && key_Point->pt.x + hSize[3]+1<img_Texton.size().width){
         //if(key_Point->pt.y - hSize[3]>0 && key_Point->pt.y + hSize[3]+1<img_Texton.size().height){
             // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
-            for(j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
-                for(i=key_Point->pt.x - hSize[3]; i<key_Point->pt.x + hSize[3]+1; i++){
+            for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
+                for(int k=key_Point->pt.x - hSize[3]; k<key_Point->pt.x + hSize[3]+1; k++){
                     // if the study area is fully inside the image
-                    if((j > 0) && (j < img_Texton.size().height) && (i > 0) && (i < img_Texton.size().width)){
-                        p221.at<int8_t>(x,y) = img_Texton.at<int8_t>(i, j);
+                    if((j > 0) && (j < img_Texton.size().height) && (k > 0) && (k < img_Texton.size().width)){
+                        p221.at<int8_t>(x,y) = img_Texton.at<int8_t>(j, k);
                     }else{
                         p221.at<int8_t>(x,y) = -1;
                     }
-                    x++;
+                    y++;
                 }
-                x = 0;
-                y++;
+                y = 0;
+                x++;
             }
         //}else {
         //    key_Point->type = 0;
@@ -539,7 +535,7 @@ void getHistogramTextons(cv::Mat img, uint16_t histogram[][135], uint8_t hSize[4
                         histogram[n][img.at<int8_t>(j,k)] += 1;
                 }
                 // For patch 221
-                histogram[3][img.at<uint16_t>(j,k)] += 1;
+                histogram[3][img.at<int8_t>(j,k)] += 1;
             }
         }
     }
