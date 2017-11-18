@@ -432,7 +432,9 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             if(data.key_Point[i].type != 0){
                 if(i % 20 == 0)
                     std::cout << "     [" + std::to_string(porcentage(i, data.n_labels)) + '%' + "] Obtaining histograms of textons...\n";
-                getPatchs(img_MR, dictionary, &data.key_Point[i], &n_overflow);
+                getPatchs(img_MR, dictionary, &data.key_Point[i]);
+                if(data.key_Point[i].type==0)
+                    n_overflow++;
             }
         }
         file.close();
@@ -455,7 +457,7 @@ int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch){
     return n_overflows;
 }
 
-void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point, int* n_overflow){
+void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point){
 
     cv::Mat p221(221, 221, CV_32SC1);
     
@@ -487,12 +489,10 @@ void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key
                 y++;
             }
         }else {
-            n_overflow++;
             key_Point->type = 0;
             return; 
         }
     }else {
-        n_overflow++;
         key_Point->type = 0;
         return;
     }
