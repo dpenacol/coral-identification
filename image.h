@@ -19,12 +19,23 @@
 #include <fstream>
 #include <string>
 
-
+struct keyPointHistogram{
+    cv::Point pt;
+    int type;
+    float histogram[540];
+};
 
 struct keyPoint{
     cv::Point pt;
     int type;
     float r24[24];
+};
+
+struct img_dataHistogram{
+    int index;
+    int year;
+    int n_labels;
+    struct keyPointHistogram key_Point[maxKeypoints];
 };
 
 struct img_data{
@@ -54,7 +65,7 @@ struct img_data* loadDescriptor(int n_images);
 
 bool loadDictionaryTextons(cv::Mat dictionary, std::string path);
 
-void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[200], int start_index, int finish_index);
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055], int start_index, int finish_index);
 // Computes the K-means algorithm to each class creating a 
 // matrix with 135 textons each one with 24 values.
 
@@ -72,4 +83,15 @@ bool getDataSet(struct img_data* data, int n_images);
 
 int getNearestTexton(cv::Mat dictionaryTextons, float r24[24]);
 
+bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n_images);
+
+struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, int year, int index);
+
+struct keyPointHistogram getPatchs(cv::Mat img_MR, cv::Mat dictionary);
+
+void getHistogramTextons(cv::Mat img, int histogram[135]);
+
+void normalizeHistogramsTextons(int histograms[][135] , float histogram[540]);
+
+int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch);
 #endif
