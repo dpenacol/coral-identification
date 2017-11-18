@@ -383,7 +383,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2008 data set    
-    for(int i = 2; i<4; i=i+2){
+    for(int i = 2; i<n_images; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Obtaining histograms: ./Vision_MCR/2008/" + file_names.at(i) + "\n";
         dataH[index_data] = getHistogramDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), dictionary, 2008, index_data);
         index_data++;
@@ -393,8 +393,6 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     file_names.erase(file_names.begin(), file_names.end());
 
     return true;
-
-
 }
 
 struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, int year, int index){
@@ -425,7 +423,7 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             data.key_Point[i].type = str2label(str);
         }
         for(i=0; i< data.n_labels ; i++){
-            data.key_Point[i] = getPatchs(img_MR, dictionary);
+            getPatchs(img_MR, dictionary, &data.key_Point[i]);
         }
         file.close();
     } else{
@@ -445,16 +443,25 @@ int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch){
     return n_overflows;
 }
 
-struct keyPointHistogram getPatchs(cv::Mat img_MR, cv::Mat dictionary){
-    struct keyPointHistogram key_Point;
+void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point){
+
+    cv::Mat patchs[4];
     cv::Mat p21(21, 21, CV_32SC1);
     cv::Mat p61(61, 61, CV_32SC1);
     cv::Mat p121(121, 121, CV_32SC1);
     cv::Mat p221(221, 221, CV_32SC1);
+
+    patchs[0] = p21;
+    patchs[1] = p61;
+    patchs[2] = p121;
+    patchs[3] = p221;
+    
     float r24[24];
     int histograms[4][135];
     int x = 0, y = 0;
     int texton = -1;
+    // Half Size (height or width of rectangle) of study areas
+    int hSize[4] = {10, 30, 60, 110};
 
     // Initializing the histograms
     for(int i=0; i<135; i++){
@@ -464,80 +471,30 @@ struct keyPointHistogram getPatchs(cv::Mat img_MR, cv::Mat dictionary){
         histograms[3][i] = 0;
     }
 
-    // Obtaining the R^24 vectors with patch 21
-    for(int j=key_Point.pt.y - 10; j<key_Point.pt.y + 11; j++){
-        for(int i=key_Point.pt.x - 10; i<key_Point.pt.x + 11; i++){
-            for(int k=0; k<24; k++){
-                r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
+    // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
+    for(int n=0; n<4; n++){
+        for(int j=key_Point->pt.y - hSize[n]; j<key_Point->pt.y + hSize[n]+1; j++){
+            for(int i=key_Point->pt.x - hSize[n]; i<key_Point->pt.x + hSize[n]+1; i++){
+                // if the study area is fully inside the image
+                if((j > -hSize[n] || j < (img_MR.size().height - hSize[n]+1)) && (i > -hSize[n] || i < (img_MR.size().width-hSize[n]+1))){
+                    for(int k=0; k<24; k++){
+                        r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
+                    }
+                    texton = getNearestTexton(dictionary, r24);
+                    patchs[n].at<int>(x,y) = texton;
+                    x++;
+                }
             }
-            texton = getNearestTexton(dictionary, r24);
-            p21.at<int>(x,y) = texton;
-            x++;
+            x = 0;
+            y++;
         }
         x = 0;
-        y++;
+        y = 0;
+        // Obtaining the histograms of textons for each patch applied
+        getHistogramTextons(patchs[n], histograms[n]);
     }
-    x = 0;
-    y = 0;
-
-    // Obtaining the R^24 vectors with patch 61
-    for(int j=key_Point.pt.y - 30; j<key_Point.pt.y + 31; j++){
-        for(int i=key_Point.pt.x - 30; i<key_Point.pt.x + 31; i++){
-            for(int k=0; k<24; k++){
-                r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
-            }
-            texton = getNearestTexton(dictionary, r24);
-            p61.at<int>(x,y) = texton;
-            x++;
-        }
-        x = 0;
-        y++;
-    }
-    x = 0;
-    y = 0;
-
-    // Obtaining the R^24 vectors with patch 121
-    for(int j=key_Point.pt.y - 60; j<key_Point.pt.y + 61; j++){
-        for(int i=key_Point.pt.x - 60; i<key_Point.pt.x + 61; i++){
-            for(int k=0; k<24; k++){
-                r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
-            }
-            texton = getNearestTexton(dictionary, r24);
-            p121.at<int>(x,y) = texton;
-            x++;
-        }
-        x = 0;
-        y++;
-    }
-    x = 0;
-    y = 0;
-
-    // Obtaining the R^24 vectors with patch 221
-    for(int j=key_Point.pt.y - 110; j<key_Point.pt.y + 111; j++){
-        for(int i=key_Point.pt.x - 110; i<key_Point.pt.x + 111; i++){
-            for(int k=0; k<24; k++){
-                r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
-            }
-            texton = getNearestTexton(dictionary, r24);
-            p221.at<int>(x,y) = texton;
-            x++;
-        }
-        x = 0;
-        y++;
-    }
-    x = 0;
-    y = 0;
-
-    // Obtaining the histograms of textons for each patch applied
-    getHistogramTextons(p21, histograms[0]);
-    getHistogramTextons(p61, histograms[1]);
-    getHistogramTextons(p121, histograms[2]);
-    getHistogramTextons(p221, histograms[3]);
-
     // Normalizing the histograms and saving them in the structure
-    normalizeHistogramsTextons(histograms, key_Point.histogram);
-
-    return key_Point;
+    normalizeHistogramsTextons(histograms, key_Point->histogram);
 }
 
 void getHistogramTextons(cv::Mat img, int histogram[135]){
@@ -554,7 +511,7 @@ void normalizeHistogramsTextons(int histograms[][135] , float histogram[540]){
     int max = 0;
     int aux = 0;
 
-    // Normalizing each histogram and then saving them to the nhistogram array
+    // Normalizing each histogram and then saving them to the histogram array
     for(int i=0; i<4; i++){
         for(int j=0; j<135; j++){
             if(histograms[i][j] > max)
