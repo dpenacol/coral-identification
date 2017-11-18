@@ -70,7 +70,7 @@ struct img_data* loadDescriptor(int n_images){
     std::ifstream fin;
     fin.open("data_set.bin", std::ios::in| std::ios::binary);
     if(fin.is_open()){
-        std::cout << "Success loading of data_set.bin" << std::endl;
+        std::cout << "Loading data_set.bin..." << std::endl;
 
         for(int i = 0; i < n_images; i++){
             fin.read((char *)&data[i], sizeof(struct img_data));
@@ -81,6 +81,7 @@ struct img_data* loadDescriptor(int n_images){
                 }
             }
         }
+        std::cout << "Success loading of data_set.bin" << std::endl;
         fin.close();
     }else{
         std::cout << "Error loading data_set.bin" << std::endl;
@@ -339,9 +340,11 @@ bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
 bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
 
     std::ifstream file(path.c_str(), std::ios::in | std::ios::binary );
-    if (!file)
+    if (!file){
+        std::cout << "Error loading dictionary.bin..." << std::endl;
         return false;
-
+    }
+    std::cout << "Loading dictionary.bin..." << std::endl;
     int n = 0;
     for(int j=0; j<9; j++){
         for(int k=0; k<15; k++){
@@ -352,6 +355,7 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
             n++;
         }
     }
+    std::cout << "Success loading of dictionary.bin" << std::endl;
     return true;
 }
 
@@ -383,8 +387,8 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2008 data set    
-    for(int i = 2; i<n_images; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Obtaining histograms: ./Vision_MCR/2008/" + file_names.at(i) + "\n";
+    for(int i = 2; i<4; i=i+2){
+        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Image: ./Vision_MCR/2008/" + file_names.at(i) + "\n";
         dataH[index_data] = getHistogramDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), dictionary, 2008, index_data);
         index_data++;
     }
@@ -423,7 +427,11 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             data.key_Point[i].type = str2label(str);
         }
         for(i=0; i< data.n_labels ; i++){
-            getPatchs(img_MR, dictionary, &data.key_Point[i]);
+            if(data.key_Point[i].type != 0){
+                if(i % 20 == 0)
+                    std::cout << "     [" + std::to_string(porcentage(i, data.n_labels)) + '%' + "] Obtaining histograms of textons...\n";
+                getPatchs(img_MR, dictionary, &data.key_Point[i]);
+            }
         }
         file.close();
     } else{

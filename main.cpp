@@ -30,8 +30,7 @@ int main() {
 
     // Load the image data from a binary file
     data = loadDescriptor(n_images);
-    int max_patch = 111;
-    std::cout << "N of overflows: " << checkPatchCompatibility(data, n_images, max_patch);
+
     // print test, first the coordinates and labels, next an r24 vector information
     /*int image = 0;
     for(int i = 0; i<data[image].n_labels ;i++){
