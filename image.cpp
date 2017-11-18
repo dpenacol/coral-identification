@@ -486,11 +486,14 @@ void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key
                         y++;
                     }
                 }
-        }else
+        }else{
+            key_Point->type = 0;
             return;
-    }else
+        }
+    }else{
+        key_Point->type = 0;
         return;
-    
+    }
     // Obtaining the histograms of textons 
     getHistogramTextons(p221, histograms, hSize);
 
