@@ -89,7 +89,7 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
 
 void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point);
 
-void getHistogramTextons(cv::Mat img, int histogram[135]);
+void getHistogramTextons(cv::Mat img, int histogram[][135], int hSize[4]);
 
 void normalizeHistogramsTextons(int histograms[][135] , float histogram[540]);
 
