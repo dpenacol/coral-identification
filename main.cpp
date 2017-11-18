@@ -60,7 +60,7 @@ int main() {
     getDataHistogram(dataH, dictionaryTextons, n_images);
 
     for(int i=0; i<540; i++){
-        std::cout << dataH->key_Point[1].histogram[i] << "\n";
+        std::cout << dataH->key_Point[0].histogram[i] << "\n";
     }
 
     // Freeing space of the data struct

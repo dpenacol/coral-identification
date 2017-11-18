@@ -87,7 +87,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
 
 struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, int year, int index);
 
-void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point, int* n_overflow);
+void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point);
 
 void getHistogramTextons(cv::Mat img, int histogram[][135], int hSize[4]);
 
