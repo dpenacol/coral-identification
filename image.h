@@ -19,23 +19,10 @@
 #include <fstream>
 #include <string>
 
-struct keyPointHistogram{
-    cv::Point pt;
-    int type;
-    float histogram[540];
-};
-
 struct keyPoint{
     cv::Point pt;
     int type;
     float r24[24];
-};
-
-struct img_dataHistogram{
-    int index;
-    int year;
-    int n_labels;
-    struct keyPointHistogram key_Point[maxKeypoints];
 };
 
 struct img_data{
@@ -43,6 +30,19 @@ struct img_data{
     int year;
     int n_labels;
     struct keyPoint key_Point[maxKeypoints];
+};
+
+struct keyPointHistogram{
+    cv::Point pt;
+    int type;
+    float histogram[540];
+};
+
+struct img_dataHistogram{
+    int index;
+    int year;
+    int n_labels;
+    struct keyPointHistogram key_Point[maxKeypoints];
 };
 
 void testTxt(void);
@@ -87,7 +87,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
 
 struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, int year, int index);
 
-struct keyPointHistogram getPatchs(cv::Mat img_MR, cv::Mat dictionary);
+void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point);
 
 void getHistogramTextons(cv::Mat img, int histogram[135]);
 
