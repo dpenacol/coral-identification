@@ -45,21 +45,24 @@ int main() {
     // Obtaining the textons from a group of images of the data
     cv::Mat dictionaryTextons;
     dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
-    int start_index = 0, finish_index = 1100;
+    int start_index = 0, finish_index = 2055;
 
     //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
 
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
-    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
-    // Prueba de getNearestTexton()
-    float ejem[24];
-    int texton=0;
-    for(int i=0; i<24; i++){
-        ejem[i] = dictionaryTextons.at<float>(texton,i);
+    //std::cout << "\nPrimer texton: " << dictionaryTextons.at<float>(0,0);
+    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    
+    // Obtaining the Textons Histograms from the data_set
+    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+
+    getDataHistogram(dataH, dictionaryTextons, n_images);
+
+    for(int i=0; i<540; i++){
+        std::cout << dataH->key_Point[0].histogram[i] << "\n";
     }
-    std::cout << getNearestTexton(dictionaryTextons, ejem);
-  
+
     // Freeing space of the data struct
     delete [] data;
 
