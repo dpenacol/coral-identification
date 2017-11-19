@@ -15,10 +15,92 @@
 #include "filters.h"
 #include "svm.h"
 #include "image.h"
+#include <tuple>
+#include <args.hxx>
 
-int main() {
+std::istream& operator>>(std::istream& is, std::tuple<int, int, int>& ints){
+    is >> std::get<0>(ints);
+    is.get();
+    is >> std::get<1>(ints);
+    is.get();
+    is >> std::get<2>(ints);
+    return is;
+}
+
+int main(int argc, char **argv){
+    int n_images;
+    std::string outfile, infile;
+
+    // Argument Parser flags
+    args::ArgumentParser parser("[EC5803] Coral Identification", "Authors: Diego Peña, Victor Garcia, Fabio Morales, Andreina Duarte");
+    args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+    args::ValueFlag<std::string> load(parser, "File.bin", "name of binary file to load (with .bin)", {'l', "load"});
+    args::ValueFlag<std::string> output(parser, "Filename", "name of binary file to save data (with .bin), no file will be saved by default", {'o', "output"});
+    args::ValueFlag<int> n_img(parser, "Integer", "Number of images to test (Temporal option)", {'n',"number"});
+    args::ValueFlag<std::string> dic(parser, "Filename", "Create a Dictionary of Textons and save in Filename.bin (with .bin)", {'d'});
+    args::Flag train(parser, "t", "Train the SVM (must specify a years of dataset)", {'t', "train"});
+    args::Group aux(parser, "  (Optional)", args::Group::Validators::All);
+    args::Group nxor(aux, "Modify the parameters of K-means algorithm:", args::Group::Validators::AllOrNone);
+    args::ValueFlag<int> kmeans(nxor, "Criteria", "Stop criteria for K-means clustering (1 for iteration, 2 for epsilon, 3 both)[If set mus specify all the K-means criteria parameters]", {'k'});
+    args::ValueFlag<int> i(nxor, "Integer", "Iteration numbers for K-means clustering (0 if not used)", {'i'});
+    args::ValueFlag<int> a(nxor, "Integer", "Attempt number for K-means clustering (0 if not used)", {'a'});
+    args::ValueFlag<float> e(nxor, "Float", "epsilon: distance theshold (0 if not used)", {'e'});
+    args::Positional<std::tuple<int, int, int> > year(parser, "YEARS", "years of set to work with (separate by commas)");
+    
+    try{
+        parser.ParseCLI(argc, argv);
+    }
+    catch (args::Help){
+        std::cout << parser;
+        return 0;
+    }
+    catch (args::ParseError e){
+        std::cerr << e.what() << std::endl;
+        std::cerr << parser;
+        return 1;
+    }
+    catch (args::ValidationError e){
+        std::cerr << "If k flag is set, must specify all the K-means criteria parameters" << std::endl;
+        std::cerr << parser;
+        return 1;
+    }
+    if(load){
+        infile = args::get(load);
+        std::cout << "File to load: " << "\"" <<infile <<"\""<<std::endl;
+    }
+    if (output){ 
+        outfile = args::get(output);
+        std::cout << std::endl << "Output file: " << "\"" << outfile << "\""<< std::endl; 
+    }
+    if (year){
+        int valid_year[3] = {2008, 2009, 2010};
+        int get_years[3] = {0,0,0};
+        bool yr_check=false;
+        get_years[0]=std::get<0>(args::get(year));
+        get_years[1]=std::get<1>(args::get(year));
+        get_years[2]=std::get<2>(args::get(year));
+        for(int i=0; i<3; i++){
+            for(int j=0; j<3; j++){
+                if( get_years[i] == valid_year[j] ){
+                    yr_check=true;
+                }
+            }
+            if(yr_check){
+                std::cout << "\nSet to load: ";
+                std::cout << " " << get_years[i];
+                yr_check=false;
+            }
+        }
+        std::cout << std::endl;
+    } 
+    if(train){
+        std::cout << "SVM train: " << std::endl;
+    }
+    if(n_img){
+        n_images = args::get(n_img);
+        std::cout << "Test with: " <<  n_images << std::endl;
+    }
     // Creating the data struct where the information is going to be saved
-    int n_images = 2055;
     struct img_data* data = new struct img_data[n_images];
 
     // Applying the Maximum Response Filter to each image of the 2008, 2009 and
@@ -29,8 +111,7 @@ int main() {
     // saveDescriptor(data, n_images);
 
     // Load the image data from a binary file
-    data = loadDescriptor(n_images);
-
+    //data = loadDescriptor(n_images);
     // print test, first the coordinates and labels, next an r24 vector information
     /*int image = 0;
     for(int i = 0; i<data[image].n_labels ;i++){
@@ -52,16 +133,16 @@ int main() {
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
     //std::cout << "\nPrimer texton: " << dictionaryTextons.at<float>(0,0);
-    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
     
     // Obtaining the Textons Histograms from the data_set
-    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+    //struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
 
-    getDataHistogram(dataH, dictionaryTextons, n_images);
+    //getDataHistogram(dataH, dictionaryTextons, n_images);
 
-    for(int i=0; i<540; i++){
-        std::cout << dataH->key_Point[0].histogram[i] << "\n";
-    }
+    //for(int i=0; i<540; i++){
+    //    std::cout << dataH->key_Point[0].histogram[i] << "\n";
+    //}
 
     // Freeing space of the data struct
     delete [] data;
