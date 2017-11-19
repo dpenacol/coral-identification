@@ -55,24 +55,39 @@ int main(int argc, char **argv){
         return 0;
     }
     catch (args::ParseError e){
+        /*
+        INSERTE CODIGO PARA ERRORES DE VALIDACION DE PARAMETROS
+        */
         std::cerr << e.what() << std::endl;
         std::cerr << parser;
         return 1;
     }
     catch (args::ValidationError e){
+        /*
+        INSERTE CODIGO PARA ERRORES DE VALIDACION DE GRUPO
+        */
         std::cerr << "If k flag is set, must specify all the K-means criteria parameters" << std::endl;
         std::cerr << parser;
         return 1;
     }
     if(load){
+        /*
+        INSERTE CODIGO PARA LA BANDERA L
+        */
         infile = args::get(load);
         std::cout << "File to load: " << "\"" <<infile <<"\""<<std::endl;
     }
-    if (output){ 
+    if (output){
+        /*
+        INSERTE CODIGO PARA LA BANDERA O
+        */
         outfile = args::get(output);
         std::cout << std::endl << "Output file: " << "\"" << outfile << "\""<< std::endl; 
     }
     if (year){
+        /*
+        INSERTE CODIGO PARA LA BANDERA YEAR
+        */
         int valid_year[3] = {2008, 2009, 2010};
         int get_years[3] = {0,0,0};
         bool yr_check=false;
@@ -94,12 +109,22 @@ int main(int argc, char **argv){
         std::cout << std::endl;
     } 
     if(train){
+        /*
+        INSERTE CODIGO PARA LA BANDERA K
+        */
         std::cout << "SVM train: " << std::endl;
     }
     if(n_img){
+        /*
+        INSERTE CODIGO PARA LA BANDERA N
+        */
         n_images = args::get(n_img);
         std::cout << "Test with: " <<  n_images << std::endl;
     }
+    /*
+    CODIGO EN FUNCION DE LAS BANDERAS ACTIVAS
+    */
+
     // Creating the data struct where the information is going to be saved
     struct img_data* data = new struct img_data[n_images];
 
@@ -124,9 +149,9 @@ int main(int argc, char **argv){
     }*/
     
     // Obtaining the textons from a group of images of the data
-    cv::Mat dictionaryTextons;
-    dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
-    int start_index = 0, finish_index = 2055;
+    //cv::Mat dictionaryTextons;
+    //dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
+    //int start_index = 0, finish_index = 2055;
 
     //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
 
