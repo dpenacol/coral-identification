@@ -531,7 +531,6 @@ void getHistogramTextons(cv::Mat img, uint16_t histogram[][135], uint8_t hSize[4
             }
         }
     }
-
 }
 
 void normalizeHistogramsTextons(uint16_t histograms[][135] , float histogram[540]){
