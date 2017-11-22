@@ -486,30 +486,22 @@ void getPatchs(cv::Mat img_Texton, cv::Mat dictionary, struct keyPointHistogram*
     // Half Size (height or width of rectangle) of study areas
     uint8_t hSize[4] = {10, 30, 60, 110};
 
-    //if(key_Point->pt.x - hSize[3]>0 && key_Point->pt.x + hSize[3]+1<img_Texton.size().width){
-        //if(key_Point->pt.y - hSize[3]>0 && key_Point->pt.y + hSize[3]+1<img_Texton.size().height){
-            // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
-            for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
-                for(int k=key_Point->pt.x - hSize[3]; k<key_Point->pt.x + hSize[3]+1; k++){
-                    // if the study area is fully inside the image
-                    if((j > 0) && (j < img_Texton.size().height) && (k > 0) && (k < img_Texton.size().width)){
-                        p221.at<int8_t>(x,y) = img_Texton.at<int8_t>(j, k);
-                    }else{
-                        p221.at<int8_t>(x,y) = -1;
-                    }
-                    y++;
-                }
-                y = 0;
-                x++;
+  
+    // Obtaining the R^24 vectors with patchs 21, 61, 121 and 221
+    for(int j=key_Point->pt.y - hSize[3]; j<key_Point->pt.y + hSize[3]+1; j++){
+        for(int k=key_Point->pt.x - hSize[3]; k<key_Point->pt.x + hSize[3]+1; k++){
+            // if the study area is fully inside the image
+            if((j > 0) && (j < img_Texton.size().height) && (k > 0) && (k < img_Texton.size().width)){
+                p221.at<int8_t>(x,y) = img_Texton.at<int8_t>(j, k);
+            }else{
+                p221.at<int8_t>(x,y) = -1;
             }
-        //}else {
-        //    key_Point->type = 0;
-        //    return; 
-        //}
-    //}else {
-    //    key_Point->type = 0;
-    //    return;
-    //}
+            y++;
+        }
+        y = 0;
+        x++;
+    }
+
     // Initializing the histograms
     for(j=0; j<4; j++){
         for(i=0; i<135; i++){
