@@ -12,16 +12,14 @@
 
 struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, int index){
     struct img_data data;
-    int n_lables;
     data.index = 0;
     data.year = 0;
     if(year == 2008 || year == 2009){
-        n_lables = 200;
+        data.n_labels = 200;
     }
     if(year == 2010){
-        n_lables = 199;
+        data.n_labels = 199;
     }
-    data.n_labels = n_lables;
     std::ifstream file(fileName);
     if (file.is_open()){
         int i, j;
@@ -29,7 +27,7 @@ struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, in
         std::getline(file,str);
         data.index = index;
         data.year = year;
-        for(i=0; i<n_lables; i++){        
+        for(i=0; i<data.n_labels; i++){        
             file >> str;
             data.key_Point[i].pt.y = atoi(str.c_str())/2;
             file >> str; 
@@ -241,7 +239,7 @@ bool getDataSet(struct img_data* data, int n_images){
     return true;
 }
 
-void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055], int start_index, int finish_index){
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int start_index, int finish_index){
     // Parameters of K-means algorithm
     int clusters = 15;
     int attempts = 70;
@@ -412,7 +410,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     std::sort(file_names.begin(), file_names.end());
 
     // Obtaining the 2008 data set    
-    for(i = 4; i<6; i=i+2){
+    for(i = 36; i<38; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Image: ./Vision_MCR/2008/" + file_names.at(i) + "\n";
         dataH[index_data] = getHistogramDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), dictionary, 2008, index_data);
         index_data++;
@@ -426,7 +424,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
 
 struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, int year, int index){
     struct img_dataHistogram data;
-    cv::Mat img_Texton(img_MR.size().height, img_MR.size().width, CV_8SC1);
+    cv::Mat img_Texton(img_MR.size().height, img_MR.size().width, CV_32FC1);
     int n_labels;
     int n_overflow =0;
     int i, j;
@@ -456,7 +454,6 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
     }
 
     if (file.is_open()){
-        
         std::string str;
         std::getline(file,str);
         data.index = index;

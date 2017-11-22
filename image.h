@@ -65,7 +65,7 @@ struct img_data* loadDescriptor(int n_images);
 
 bool loadDictionaryTextons(cv::Mat dictionary, std::string path);
 
-void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055], int start_index, int finish_index);
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int start_index, int finish_index);
 // Computes the K-means algorithm to each class creating a 
 // matrix with 135 textons each one with 24 values.
 
