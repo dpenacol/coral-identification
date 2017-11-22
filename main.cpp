@@ -16,7 +16,7 @@
 #include "svm.h"
 #include "image.h"
 #include <tuple>
-#include <args.hxx>
+#include "./args/args.hxx"
 
 std::istream& operator>>(std::istream& is, std::tuple<int, int, int>& ints){
     is >> std::get<0>(ints);
@@ -111,11 +111,11 @@ int main(int argc, char **argv){
     // saveDescriptor(data, n_images);
 
     // Load the image data from a binary file
-    //data = loadDescriptor(n_images);
+    data = loadDescriptor(n_images);
     // print test, first the coordinates and labels, next an r24 vector information
     int image = 0;
     for(int i = 0; i<data[image].n_labels ;i++){
-        std::cout << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].type << std::endl;
+        std::cout << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].type << std::endl;
     }
      std::cout << "\n------------------------------------------------\n";
     
@@ -132,9 +132,9 @@ int main(int argc, char **argv){
     //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
     
     // Obtaining the Textons Histograms from the data_set
-    //struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
 
-    //getDataHistogram(dataH, dictionaryTextons, n_images);
+    getDataHistogram(dataH, dictionaryTextons, n_images);
 
     //for(int i=0; i<540; i++){
     //    std::cout << dataH->key_Point[0].histogram[i] << "\n";

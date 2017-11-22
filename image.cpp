@@ -404,7 +404,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, uint1
 
 struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, uint16_t year, uint16_t index){
     struct img_dataHistogram data;
-    cv::Mat img_Texton(img_MR.size().width, img_MR.size().height, CV_8SC1);
+    cv::Mat img_Texton(img_MR.size().height, img_MR.size().width, CV_8SC1);
     uint16_t n_labels;
     uint16_t n_overflow =0;
     uint16_t i, j;
@@ -424,8 +424,8 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
 
     // Get the nearest texton for all the vectors in img_MR
     // And saving the texton number in img_Texton
-    for(i=0; i<img_MR.size().width; i++){
-        for(j=0; j<img_MR.size().height; j++){
+    for(i=0; i<img_MR.size().height; i++){
+        for(j=0; j<img_MR.size().width; j++){
             for(k=0; k<24; k++){
                 r24[k] = img_MR.at<cv::Vec<float, 24>>(i, j)[k];
             }
@@ -441,9 +441,9 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
         data.year = year;
         for(i=0; i<n_labels; i++){        
             file >> str;
-            data.key_Point[i].pt.x = atoi(str.c_str())/2;
-            file >> str; 
             data.key_Point[i].pt.y = atoi(str.c_str())/2;
+            file >> str; 
+            data.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str;
             data.key_Point[i].type = str2label(str);
         }
