@@ -31,9 +31,9 @@ struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, uint16_t yea
         data.year = year;
         for(i=0; i<n_lables; i++){        
             file >> str;
-            data.key_Point[i].pt.x = atoi(str.c_str())/2;
-            file >> str; 
             data.key_Point[i].pt.y = atoi(str.c_str())/2;
+            file >> str; 
+            data.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str;
             data.key_Point[i].type = str2label(str);
         }
@@ -72,6 +72,7 @@ struct img_data* loadDescriptor(uint16_t n_images){
     fin.open("data_set.bin", std::ios::in| std::ios::binary);
     uint16_t i, j;
     uint8_t k;
+    int aux;
     if(fin.is_open()){
         std::cout << "Loading data_set.bin..." << std::endl;
 
@@ -79,6 +80,9 @@ struct img_data* loadDescriptor(uint16_t n_images){
             fin.read((char *)&data[i], sizeof(struct img_data));
             for(j=0; j<data[i].n_labels; j++){
                 fin.read((char *)&data[i].key_Point[j], sizeof(struct keyPoint));
+                aux = data[i].key_Point[j].pt.x; //////////////////////// TEMPORAL CON EL BINARIO ACTUAL
+                data[i].key_Point[j].pt.x = data[i].key_Point[j].pt.y; // TEMPORAL CON EL BINARIO ACTUAL
+                data[i].key_Point[j].pt.y = aux; //////////////////////// TEMPORAL CON EL BINARIO ACTUAL
                 for(k=0; k<24; k++){
                     fin.read((char *)&data[i].key_Point[j].r24[k], sizeof(data[i].key_Point[j].r24[k]));
                 }
