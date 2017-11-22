@@ -136,7 +136,7 @@ int main(int argc, char **argv){
     // saveDescriptor(data, n_images);
 
     // Load the image data from a binary file
-    //data = loadDescriptor(n_images);
+    data = loadDescriptor(n_images);
     // print test, first the coordinates and labels, next an r24 vector information
     /*int image = 0;
     for(int i = 0; i<data[image].n_labels ;i++){
@@ -149,8 +149,8 @@ int main(int argc, char **argv){
     }*/
     
     // Obtaining the textons from a group of images of the data
-    //cv::Mat dictionaryTextons;
-    //dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
+    cv::Mat dictionaryTextons;
+    dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
     //int start_index = 0, finish_index = 2055;
 
     //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
@@ -158,16 +158,25 @@ int main(int argc, char **argv){
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
     //std::cout << "\nPrimer texton: " << dictionaryTextons.at<float>(0,0);
-    //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
     
     // Obtaining the Textons Histograms from the data_set
-    //struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
 
-    //getDataHistogram(dataH, dictionaryTextons, n_images);
+    getDataHistogram(dataH, dictionaryTextons, n_images);
 
-    //for(int i=0; i<540; i++){
-    //    std::cout << dataH->key_Point[0].histogram[i] << "\n";
-    //}
+    for(int k=0; k<20;k++){
+        for(int j=0; j<4;j++){
+            for(int i=135*j; i<135*(j+1); i++){
+                if(dataH->key_Point[k].histogram[i]==1){
+                    std::cout << "Patch"<< j <<": " <<(i-135*j)/14+1 << std::endl;
+                }
+                //std::cout << dataH->key_Point[0].histogram[i] << "\n";
+            }
+        }
+        std::cout << "----------------------" << std::endl;
+    }
+
 
     // Freeing space of the data struct
     delete [] data;
