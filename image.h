@@ -47,32 +47,32 @@ struct img_dataHistogram{
 
 void testTxt(void);
 
-uint8_t str2label(std::string str);
+int str2label(std::string str);
 
-struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, uint16_t year, uint16_t index);
+struct img_data getDescriptor(std::string fileName,cv::Mat img_MR, int year, int index);
 // Load the information of all the clasification point from a text file, and associate 
 // an r24 vector from the Maximun Response filter.
 
-void saveDescriptor(struct img_data* data, uint16_t n_images);
+void saveDescriptor(struct img_data* data, int n_images);
 // Save the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from the Maximum Response filter in a binary file.
 
 bool saveDictionaryTextons(cv::Mat dictionary, std::string path);
 
-struct img_data* loadDescriptor(uint16_t n_images);
+struct img_data* loadDescriptor(int n_images);
 // Load the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from a binary file.
 
 bool loadDictionaryTextons(cv::Mat dictionary, std::string path);
 
-void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055], uint16_t start_index, uint16_t finish_index);
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data data[2055], int start_index, int finish_index);
 // Computes the K-means algorithm to each class creating a 
 // matrix with 135 textons each one with 24 values.
 
-uint8_t porcentage(uint16_t index_data, uint16_t n_images);
+int porcentage(int index_data, int n_images);
 // Shows porcentage of completition of the getDataSet function
 
-bool getDataSet(struct img_data* data, uint16_t n_images);
+bool getDataSet(struct img_data* data, int n_images);
 // Load the Data of the images and the txt of the three 2008, 2009 and 2010 sets of images.
 // The sets needs to be saved on the project folder by this structure:
 // ~/ProjectRoot
@@ -81,17 +81,19 @@ bool getDataSet(struct img_data* data, uint16_t n_images);
 //             /2009
 //             /2010
 
-uint8_t getNearestTexton(cv::Mat dictionaryTextons, float r24[24]);
+int getNearestTexton(cv::Mat dictionaryTextons, float r24[24]);
 
-bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, uint16_t n_images);
+bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n_images);
 
-struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, uint16_t year, uint16_t index);
+struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat img_MR, cv::Mat dictionary, int year, int index);
 
 void getPatchs(cv::Mat img_MR, cv::Mat dictionary, struct keyPointHistogram* key_Point);
 
-void getHistogramTextons(cv::Mat img, uint16_t histogram[][135], uint8_t hSize[4]);
+void getHistogramTextons(cv::Mat img, int histogram[][135], int hSize[4]);
 
-void normalizeHistogramsTextons(uint16_t histograms[][135] , float histogram[540]);
+void normalizeHistogramsTextons(int histograms[][135] , float histogram[540]);
 
 int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch);
+
+void readTextonsMatlab(cv::Mat dictionary, std::string filename);
 #endif

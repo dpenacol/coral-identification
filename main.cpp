@@ -126,6 +126,7 @@ int main(int argc, char **argv){
     */
 
     // Creating the data struct where the information is going to be saved
+    n_images = 2055;
     struct img_data* data = new struct img_data[n_images];
 
     // Applying the Maximum Response Filter to each image of the 2008, 2009 and
@@ -139,45 +140,40 @@ int main(int argc, char **argv){
     data = loadDescriptor(n_images);
     // print test, first the coordinates and labels, next an r24 vector information
     int image = 0;
-    for(int i = 0; i<data[image].n_labels ;i++){
+    /*for(int i = 0; i<data[image].n_labels ;i++){
         std::cout << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].type << std::endl;
     }
-     std::cout << "\n------------------------------------------------\n";
+     std::cout << "\n------------------------------------------------\n";*/
     
     // Obtaining the textons from a group of images of the data
     cv::Mat dictionaryTextons;
     dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
-    //int start_index = 0, finish_index = 2055;
+    int start_index = 0, finish_index = 2055;
 
     //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
 
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
-    //std::cout << "\nPrimer texton: " << dictionaryTextons.at<float>(0,0);
-    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
-    
+    //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
+
     // Obtaining the Textons Histograms from the data_set
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
-<<<<<<< HEAD
-
-    getDataHistogram(dataH, dictionaryTextons, n_images);
-=======
 
     getDataHistogram(dataH, dictionaryTextons, n_images);
 
     for(int k=0; k<20;k++){
+        std::cout << "Key point: " << k << std::endl;
         for(int j=0; j<4;j++){
             for(int i=135*j; i<135*(j+1); i++){
                 if(dataH->key_Point[k].histogram[i]==1){
-                    std::cout << "Patch"<< j <<": " <<(i-135*j)/14+1 << std::endl;
+                    std::cout << "Patch"<< j <<": " <<(i-135*j)/15+1 << std::endl;
                 }
-                //std::cout << dataH->key_Point[0].histogram[i] << "\n";
             }
         }
+        std::cout << "Correct class: " << dataH->key_Point[k].type << std::endl;
         std::cout << "----------------------" << std::endl;
     }
->>>>>>> 640e5e089a4e97692a1ed58e86e5123fcfd051cd
-
 
     // Freeing space of the data struct
     delete [] data;
