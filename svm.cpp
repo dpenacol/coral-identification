@@ -3192,27 +3192,39 @@ void svm_set_print_string_function(void (*print_func)(const char *))
 		svm_print_string = print_func;
 }
 
-void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int mode, int start_index, int finish_index){
-	// Mode 1 : Only 2008 set
-	if(mode == 1){
-		
-	}
-	// Mode 2 : Only 2009 set
-	if(mode == 2){
-
-	}
-	// Mode 3 : 2008 and 2009 set
-	if(mode == 3){
-
-	}
+void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int n_img2008, int n_img2009, int n_img2010){
+	int set1 = 671;
+	int set2 = 695;
+	int set3 = 689;
 
 	int row_x = 0;
 	int row_space = 0;
 	int n_data = 0;
-	for(int i=start_index; i<finish_index+1; i++){
-		for(int j=0; j<dataH[i].n_labels; j++){
-			if(dataH[i].key_Point[j].type!=0){
-				n_data++;
+
+	if(n_img2008){
+		for(int i=0; i<n_img2008; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					n_data++;
+				}
+			}
+		}
+	}
+	if(n_img2009){
+		for(int i=set1; i<n_img2009+set1; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					n_data++;
+				}
+			}
+		}
+	}
+	if(n_img2010){
+		for(int i=set1+set2; i<n_img2010+set1+set2; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					n_data++;
+				}
 			}
 		}
 	}
@@ -3221,28 +3233,86 @@ void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, in
 	svm_node** x = Malloc(svm_node*, prob->l);
 
 	// Assigning dataH values to svm_problem structure
-	for(int i=start_index; i<finish_index+1; i++){
-		for(int j=0; j<dataH[i].n_labels; j++){
-			if(dataH[i].key_Point[j].type!=0){
-				for(int m=0; m<540; m++){
-					if(dataH[i].key_Point[j].histogram[m]!=0){
-						row_space++;
+	if(n_img2008){
+		for(int i=0; i<n_img2008; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					for(int m=0; m<540; m++){
+						if(dataH[i].key_Point[j].histogram[m]!=0){
+							row_space++;
+						}
 					}
-				}
-				svm_node* x_space = Malloc(svm_node, row_space + 1);
-				row_space = 0;
-				for(int m=0; m<540; m++){
-					if(dataH[i].key_Point[j].histogram[m]!=0){
-						x_space[row_space].index = m+1;
-						x_space[row_space].value = (double)dataH[i].key_Point[j].histogram[m];
-						row_space++;
+					svm_node* x_space = Malloc(svm_node, row_space + 1);
+					row_space = 0;
+					for(int m=0; m<540; m++){
+						if(dataH[i].key_Point[j].histogram[m]!=0){
+							x_space[row_space].index = m+1;
+							x_space[row_space].value = (double)dataH[i].key_Point[j].histogram[m];
+							row_space++;
+						}
 					}
-				}
-				x_space[row_space].index = -1;
-				row_space = 0;
+					x_space[row_space].index = -1;
+					row_space = 0;
 
-				x[row_x] = x_space;
-				row_x++;				
+					x[row_x] = x_space;
+					row_x++;				
+				}
+			}
+		}
+	}
+
+	if(n_img2009){
+		for(int i=set1; i<n_img2009+set1; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					for(int m=0; m<540; m++){
+						if(dataH[i].key_Point[j].histogram[m]!=0){
+							row_space++;
+						}
+					}
+					svm_node* x_space = Malloc(svm_node, row_space + 1);
+					row_space = 0;
+					for(int m=0; m<540; m++){
+						if(dataH[i].key_Point[j].histogram[m]!=0){
+							x_space[row_space].index = m+1;
+							x_space[row_space].value = (double)dataH[i].key_Point[j].histogram[m];
+							row_space++;
+						}
+					}
+					x_space[row_space].index = -1;
+					row_space = 0;
+
+					x[row_x] = x_space;
+					row_x++;				
+				}
+			}
+		}
+	}
+
+	if(n_img2010){
+		for(int i=set1+set2; i<n_img2010+set1+set2; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					for(int m=0; m<540; m++){
+						if(dataH[i].key_Point[j].histogram[m]!=0){
+							row_space++;
+						}
+					}
+					svm_node* x_space = Malloc(svm_node, row_space + 1);
+					row_space = 0;
+					for(int m=0; m<540; m++){
+						if(dataH[i].key_Point[j].histogram[m]!=0){
+							x_space[row_space].index = m+1;
+							x_space[row_space].value = (double)dataH[i].key_Point[j].histogram[m];
+							row_space++;
+						}
+					}
+					x_space[row_space].index = -1;
+					row_space = 0;
+
+					x[row_x] = x_space;
+					row_x++;				
+				}
 			}
 		}
 	}
@@ -3251,11 +3321,33 @@ void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, in
 	prob->y = Malloc(double, row_x);
 	row_x = 0;
 
-	for(int i=start_index; i<finish_index+1; i++){
-		for(int j=0; j<dataH[i].n_labels; j++){
-			if(dataH[i].key_Point[j].type!=0){
-				prob->y[row_x] = dataH[i].key_Point[j].type;
-				row_x++;
+	if(n_img2008){
+		for(int i=0; i<n_img2008; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					prob->y[row_x] = dataH[i].key_Point[j].type;
+					row_x++;
+				}
+			}
+		}
+	}
+	if(n_img2009){
+		for(int i=set1; i<n_img2009+set1; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					prob->y[row_x] = dataH[i].key_Point[j].type;
+					row_x++;
+				}
+			}
+		}
+	}
+	if(n_img2010){
+		for(int i=set1+set2; i<n_img2010+set1+set2; i++){
+			for(int j=0; j<dataH[i].n_labels; j++){
+				if(dataH[i].key_Point[j].type!=0){
+					prob->y[row_x] = dataH[i].key_Point[j].type;
+					row_x++;
+				}
 			}
 		}
 	}

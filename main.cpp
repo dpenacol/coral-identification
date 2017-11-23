@@ -151,16 +151,16 @@ int main(int argc, char **argv){
 
     // Obtaining the Textons Histograms from the data_set
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+    n_images = 1;
     getDataHistogram(dataH, dictionaryTextons, n_images);
     //printMAXHistogramTextons(dataH, 20);
 
     // Creating the SVM structures
     struct svm_problem prob;
-    getProblemSVM(&prob, dataH, 1, 0, 1);
-
+    getProblemSVM(&prob, dataH, 1, 0, 0);
 
     // Freeing space of the data struct
     delete [] data;
-
+    delete [] dataH;
     return 0;
 }

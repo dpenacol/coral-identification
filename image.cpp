@@ -409,8 +409,9 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     // Sorting the vector of strings so it is alphabetically ordered
     std::sort(file_names.begin(), file_names.end());
 
-    // Obtaining the 2008 data set    
-    for(i = 2; i<6; i=i+2){
+    // Obtaining the 2008 data set
+    std::cout << "Computing histograms of textons of data set 2008..."<< std::endl;    
+    for(i = 2; i<2*n_images+2; i=i+2){
         std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Image: ./Vision_MCR/2008/" + file_names.at(i) + "\n";
         dataH[index_data] = getHistogramDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), dictionary, 2008, index_data);
         index_data++;

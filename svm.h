@@ -110,7 +110,7 @@ void svm_set_print_string_function(void (*print_func)(const char *));
 // Implementation
 void exit_input_error(int line_num);
 
-void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int mode, int start_index, int finish_index);
+void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int n_img2008, int n_img2009, int n_img2010);
 // Converts specific textons histogram .txt data into
 // a structure suitable for the LIBSVM
 
