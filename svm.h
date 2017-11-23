@@ -108,10 +108,11 @@ int svm_check_probability_model(const struct svm_model *model);
 void svm_set_print_string_function(void (*print_func)(const char *));
 
 // Implementation
+void exit_input_error(int line_num);
 
-void printSVM_TrainingData(int textons_histogram[9][2][135], std::string filename);
-// Converts specific textons histogram data into
-// a file with a format suitable for SVM
+void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int mode, int start_index, int finish_index);
+// Converts specific textons histogram .txt data into
+// a structure suitable for the LIBSVM
 
 void svm_initialize_svm_problem(struct svm_problem* prob);
 // Initializes values of a svm_problem structure

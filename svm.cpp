@@ -19,6 +19,7 @@
 #include <string>
 #include <fstream>
 #include "svm.h"
+#include "image.h"
 int libsvm_version = LIBSVM_VERSION;
 typedef float Qfloat;
 typedef signed char schar;
@@ -3191,20 +3192,74 @@ void svm_set_print_string_function(void (*print_func)(const char *))
 		svm_print_string = print_func;
 }
 
-void printSVM_TrainingData(int textons_histogram[9][2][135], std::string filename){
-	std::ofstream SVM_TrainingData;
-	SVM_TrainingData.open (filename);
+void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int mode, int start_index, int finish_index){
+	// Mode 1 : Only 2008 set
+	if(mode == 1){
+		
+	}
+	// Mode 2 : Only 2009 set
+	if(mode == 2){
 
-	for(int i=0; i<9; i++){
-        for(int j=0; j<2; j++){
-			SVM_TrainingData << std::to_string(i+1) + " ";
-            for(int k=0; k<135; k++){	
-				SVM_TrainingData << std::to_string(k+1) + ":" + std::to_string(textons_histogram[i][j][k]) + " ";
+	}
+	// Mode 3 : 2008 and 2009 set
+	if(mode == 3){
+
+	}
+
+	int row_x = 0;
+	int row_space = 0;
+	int n_data = 0;
+	for(int i=start_index; i<finish_index+1; i++){
+		for(int j=0; j<dataH[i].n_labels; j++){
+			if(dataH[i].key_Point[j].type!=0){
+				n_data++;
 			}
-			SVM_TrainingData << "\n";
 		}
 	}
-	SVM_TrainingData.close();
+
+	prob->l = n_data;
+	svm_node** x = Malloc(svm_node*, prob->l);
+
+	// Assigning dataH values to svm_problem structure
+	for(int i=start_index; i<finish_index+1; i++){
+		for(int j=0; j<dataH[i].n_labels; j++){
+			if(dataH[i].key_Point[j].type!=0){
+				for(int m=0; m<540; m++){
+					if(dataH[i].key_Point[j].histogram[m]!=0){
+						row_space++;
+					}
+				}
+				svm_node* x_space = Malloc(svm_node, row_space + 1);
+				row_space = 0;
+				for(int m=0; m<540; m++){
+					if(dataH[i].key_Point[j].histogram[m]!=0){
+						x_space[row_space].index = m+1;
+						x_space[row_space].value = (double)dataH[i].key_Point[j].histogram[m];
+						row_space++;
+					}
+				}
+				x_space[row_space].index = -1;
+				row_space = 0;
+
+				x[row_x] = x_space;
+				row_x++;				
+			}
+		}
+	}
+
+	prob->x = x;
+	prob->y = Malloc(double, row_x);
+	row_x = 0;
+
+	for(int i=start_index; i<finish_index+1; i++){
+		for(int j=0; j<dataH[i].n_labels; j++){
+			if(dataH[i].key_Point[j].type!=0){
+				prob->y[row_x] = dataH[i].key_Point[j].type;
+				row_x++;
+			}
+		}
+	}
+
 }
 
 void svm_initialize_svm_problem(struct svm_problem* prob){
