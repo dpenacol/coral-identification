@@ -133,47 +133,31 @@ int main(int argc, char **argv){
     // 2010 set. Then reads each image info .txt to save the results on data structure
     // getDataSet(data, n_images);
 
-    // Save the image data in a binary file
+    // Save the Maximum Response Filter information in a binary file
     // saveDescriptor(data, n_images);
 
     // Load the image data from a binary file
     data = loadDescriptor(n_images);
-    // print test, first the coordinates and labels, next an r24 vector information
-    int image = 0;
-    /*for(int i = 0; i<data[image].n_labels ;i++){
-        std::cout << data[image].key_Point[i].pt.y*2 << " " << data[image].key_Point[i].pt.x*2 << " " << data[image].key_Point[i].type << std::endl;
-    }
-     std::cout << "\n------------------------------------------------\n";*/
     
     // Obtaining the textons from a group of images of the data
-    cv::Mat dictionaryTextons;
-    dictionaryTextons = cv::Mat(135, 24, CV_32FC1);
+    cv::Mat dictionaryTextons(135, 24, CV_32FC1);
     int start_index = 0, finish_index = 2055;
 
     //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
-
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
-    //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
-    readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
+    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    //readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
 
     // Obtaining the Textons Histograms from the data_set
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
-
     getDataHistogram(dataH, dictionaryTextons, n_images);
+    //printMAXHistogramTextons(dataH, 20);
 
-    for(int k=0; k<20;k++){
-        std::cout << "Key point: " << k << std::endl;
-        for(int j=0; j<4;j++){
-            for(int i=135*j; i<135*(j+1); i++){
-                if(dataH->key_Point[k].histogram[i]==1){
-                    std::cout << "Patch"<< j <<": " <<(i-135*j)/15+1 << std::endl;
-                }
-            }
-        }
-        std::cout << "Correct class: " << dataH->key_Point[k].type << std::endl;
-        std::cout << "----------------------" << std::endl;
-    }
+    // Creating the SVM structures
+    struct svm_problem prob;
+    getProblemSVM(&prob, dataH, 1, 0, 1);
+
 
     // Freeing space of the data struct
     delete [] data;
