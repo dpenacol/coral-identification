@@ -17,6 +17,7 @@
 #include "image.h"
 #include <tuple>
 #include "./args/args.hxx"
+#define Malloc(type,n) (type *)malloc((n)*sizeof(type))
 
 std::istream& operator>>(std::istream& is, std::tuple<int, int, int>& ints){
     is >> std::get<0>(ints);
@@ -146,18 +147,37 @@ int main(int argc, char **argv){
     //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
-    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
-    //readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
+    //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
 
     // Obtaining the Textons Histograms from the data_set
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
-    n_images = 1;
-    getDataHistogram(dataH, dictionaryTextons, n_images);
+    n_images = 100;
+    //getDataHistogram(dataH, dictionaryTextons, n_images);
     //printMAXHistogramTextons(dataH, 20);
-
+    //saveDescriptorH(dataH, n_images);
+    dataH = loadDescriptorH(n_images);
+    
     // Creating the SVM structures
     struct svm_problem prob;
-    getProblemSVM(&prob, dataH, 1, 0, 0);
+    struct svm_parameter param;
+    struct svm_model *model;
+    const char *error_msg;
+
+    getProblemSVM(&prob, dataH, 100, 0, 0);
+    
+    
+    getParamSVM(&param, 1, 1/540);
+
+    error_msg = svm_check_parameter(&prob, &param);
+    if(error_msg){
+		fprintf(stderr,"ERROR: %s\n",error_msg);
+		exit(1);
+	}
+
+    //model = svm_train(&prob, &param);
+    double *target = Malloc(double, prob.l);
+    svm_cross_validation(&prob, &param, 4, target);
 
     // Freeing space of the data struct
     delete [] data;

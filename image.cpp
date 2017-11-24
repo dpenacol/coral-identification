@@ -82,8 +82,25 @@ void saveDescriptor(struct img_data* data, int n_images){
     fout.close();
 }
 
+void saveDescriptorH(struct img_dataHistogram* dataH, int n_images){
+    std::ofstream fout;
+    fout.open("dataH_setMATLAB.bin",std::ios::out| std::ios::binary);
+    int i, j;
+    int k;
+    for(i = 0; i < n_images; i++){
+        fout.write((char *)&dataH[i], sizeof(struct img_dataHistogram));
+        for(j=0; j<dataH[i].n_labels; j++){
+            fout.write((char *)&dataH[i].key_Point[j], sizeof(struct keyPointHistogram));
+            for(k=0; k<540; k++){
+                fout.write((char *)&dataH[i].key_Point[j].histogram[k], sizeof(dataH[i].key_Point[j].histogram[k]));
+            }
+        }
+    }
+    fout.close();
+}
+
 struct img_data* loadDescriptor(int n_images){
-    struct img_data* data = new struct img_data[2055];
+    struct img_data* data = new struct img_data[n_images];
     std::ifstream fin;
     fin.open("data_set.bin", std::ios::in| std::ios::binary);
     int i, j;
@@ -106,6 +123,32 @@ struct img_data* loadDescriptor(int n_images){
         std::cout << "Error loading data_set.bin" << std::endl;
     }
     return data;
+}
+
+struct img_dataHistogram* loadDescriptorH(int n_images){
+    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+    std::ifstream fin;
+    fin.open("dataH_setMATLAB.bin", std::ios::in| std::ios::binary);
+    int i, j;
+    int k;
+    if(fin.is_open()){
+        std::cout << "Loading dataH_set.bin..." << std::endl;
+
+        for(i = 0; i < n_images; i++){
+            fin.read((char *)&dataH[i], sizeof(struct img_dataHistogram));
+            for(j=0; j<dataH[i].n_labels; j++){
+                fin.read((char *)&dataH[i].key_Point[j], sizeof(struct keyPointHistogram));
+                for(k=0; k<540; k++){
+                    fin.read((char *)&dataH[i].key_Point[j].histogram[k], sizeof(dataH[i].key_Point[j].histogram[k]));
+                }
+            }
+        }
+        std::cout << "Success loading of dataH_set.bin" << std::endl;
+        fin.close();
+    }else{
+        std::cout << "Error loading dataH_set.bin" << std::endl;
+    }
+    return dataH;
 }
 
 int str2label(std::string str){

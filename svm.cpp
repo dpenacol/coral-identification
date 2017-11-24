@@ -3354,6 +3354,27 @@ void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, in
 
 }
 
+void getParamSVM(struct svm_parameter* param, int C, int gamma){
+	param->svm_type = C_SVC;	// C-SVM classification
+	param->kernel_type = RBF;	// Kernel type (Radial Basis Function)
+	param->degree = 0;			// For Poly (default 0)
+	param->gamma = gamma;		// For Poly/RBF/Sigmoids
+	param->coef0 = 0;			// For Poly/Sigmoid (default 0)
+
+	// Parameters for training only
+	param->cache_size = 500; 	// Set cache memory size (default 100)
+	param->eps = 0.001;			// Set the epsilon in loss function of epsilon-SVR (default 0.1, recommended 0.001)
+	param->C = C;				// For C_SVC, EPSILON_SVR and NU_SVR (default 1)
+	param->nr_weight = 0;		// Set the penalty of classes in C-SVM (for same penalty, set to 0)
+	param->weight_label = 0;	// "
+	param->weight = 0;			// "
+	param->nu = 0.5;			// Set the parameter nu of nu-SVC, one-class SVM, and nu-SVR (default 0.5)
+	param->p = 0.1;				// Set the epsilon in loss function of epsilon-SVR (default 0.1)
+	param->shrinking = 0;		// Whether to use the shrinking heuristics, 0 or 1 (default 1)
+	param->probability = 1; 	// Whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)
+
+}
+
 void svm_initialize_svm_problem(struct svm_problem* prob){
 	prob->l = 0;
 	prob->y = 0;

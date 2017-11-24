@@ -57,11 +57,17 @@ void saveDescriptor(struct img_data* data, int n_images);
 // Save the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from the Maximum Response filter in a binary file.
 
+void saveDescriptorH(struct img_dataHistogram* data, int n_images);
+// Save the entire information of the images from the dataH set, include the coordinate, it's label
+// and the associated textons histogram in a binary file.
+
 bool saveDictionaryTextons(cv::Mat dictionary, std::string path);
 
 struct img_data* loadDescriptor(int n_images);
 // Load the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from a binary file.
+
+struct img_dataHistogram* loadDescriptorH(int n_images);
 
 bool loadDictionaryTextons(cv::Mat dictionary, std::string path);
 
