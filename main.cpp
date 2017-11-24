@@ -147,8 +147,8 @@ int main(int argc, char **argv){
     //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
-    //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
-    readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
+    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    //readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
 
     // Obtaining the Textons Histograms from the data_set
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
@@ -165,9 +165,9 @@ int main(int argc, char **argv){
     const char *error_msg;
 
     getProblemSVM(&prob, dataH, 100, 0, 0);
+    //bestParametersSVM(prob, param);
     
-    
-    getParamSVM(&param, 1, 1/540);
+    getParamSVM(&param, exp2(-1), exp2(-2));
 
     error_msg = svm_check_parameter(&prob, &param);
     if(error_msg){
@@ -175,9 +175,7 @@ int main(int argc, char **argv){
 		exit(1);
 	}
 
-    //model = svm_train(&prob, &param);
-    double *target = Malloc(double, prob.l);
-    svm_cross_validation(&prob, &param, 4, target);
+    model = svm_train(&prob, &param);
 
     // Freeing space of the data struct
     delete [] data;

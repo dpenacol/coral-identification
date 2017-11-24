@@ -3354,7 +3354,7 @@ void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, in
 
 }
 
-void getParamSVM(struct svm_parameter* param, int C, int gamma){
+void getParamSVM(struct svm_parameter* param, double C, double gamma){
 	param->svm_type = C_SVC;	// C-SVM classification
 	param->kernel_type = RBF;	// Kernel type (Radial Basis Function)
 	param->degree = 0;			// For Poly (default 0)
@@ -3370,10 +3370,59 @@ void getParamSVM(struct svm_parameter* param, int C, int gamma){
 	param->weight = 0;			// "
 	param->nu = 0.5;			// Set the parameter nu of nu-SVC, one-class SVM, and nu-SVR (default 0.5)
 	param->p = 0.1;				// Set the epsilon in loss function of epsilon-SVR (default 0.1)
-	param->shrinking = 0;		// Whether to use the shrinking heuristics, 0 or 1 (default 1)
-	param->probability = 1; 	// Whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)
+	param->shrinking = 1;		// Whether to use the shrinking heuristics, 0 or 1 (default 1)
+	param->probability = 0; 	// Whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)
 
 }
+
+void bestParametersSVM(struct svm_problem prob, struct svm_parameter param){
+	const char *error_msg;
+
+	int good_predicts = 0;
+	int percentage = 0;
+	int best_percentage = 0;
+	double best_C = 0, best_gamma = 0;
+	double C = 0, gamma = 0;
+
+	for(int i=-5; i<6; i++){
+		for(int j=-5; j<6; j++){
+			C = exp2(i);
+			gamma = exp2(j);
+			getParamSVM(&param, C, gamma);
+			error_msg = svm_check_parameter(&prob, &param);
+			if(error_msg){
+				fprintf(stderr,"ERROR: %s\n",error_msg);
+				exit(1);
+			}
+
+			//model = svm_train(&prob, &param);
+			double *target = Malloc(double, prob.l);
+			svm_cross_validation(&prob, &param, 4, target);
+
+			for(int i=0; i<prob.l; i++){
+				if(target[i] == prob.y[i])
+					good_predicts++;
+			}
+			percentage = 100*good_predicts/prob.l;
+			good_predicts = 0;
+
+			if(i == -5 && j==-5){
+				best_percentage = percentage;
+				best_C = C;
+				best_gamma = gamma;
+			}else{
+				if(percentage > best_percentage){
+					best_percentage = percentage;
+					best_C = C;
+					best_gamma = gamma;
+				}
+			}
+		}
+	}
+	std::cout << "Best C: " << best_C << " Best gamma: " << best_gamma << std::endl;
+	std::cout << "Accuracy: " << best_percentage << std::endl;
+}
+
 
 void svm_initialize_svm_problem(struct svm_problem* prob){
 	prob->l = 0;

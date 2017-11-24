@@ -84,7 +84,7 @@ void saveDescriptor(struct img_data* data, int n_images){
 
 void saveDescriptorH(struct img_dataHistogram* dataH, int n_images){
     std::ofstream fout;
-    fout.open("dataH_setMATLAB.bin",std::ios::out| std::ios::binary);
+    fout.open("dataH_set.bin",std::ios::out| std::ios::binary);
     int i, j;
     int k;
     for(i = 0; i < n_images; i++){
@@ -128,7 +128,7 @@ struct img_data* loadDescriptor(int n_images){
 struct img_dataHistogram* loadDescriptorH(int n_images){
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
     std::ifstream fin;
-    fin.open("dataH_setMATLAB.bin", std::ios::in| std::ios::binary);
+    fin.open("dataH_set.bin", std::ios::in| std::ios::binary);
     int i, j;
     int k;
     if(fin.is_open()){
