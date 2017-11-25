@@ -3383,6 +3383,7 @@ void bestParametersSVM(struct svm_problem prob, struct svm_parameter param){
 	int best_percentage = 0;
 	double best_C = 0, best_gamma = 0;
 	double C = 0, gamma = 0;
+	double *target = new double[prob.l];
 
 	for(int i=-5; i<6; i++){
 		for(int j=-5; j<6; j++){
@@ -3396,16 +3397,33 @@ void bestParametersSVM(struct svm_problem prob, struct svm_parameter param){
 			}
 
 			//model = svm_train(&prob, &param);
-			double *target = Malloc(double, prob.l);
+			// double *target = Malloc(double, prob.l);  <--- Antes estaba asi, preferi cambiarlo a new que es de C++
+			// ademas lo defini al inicio de la funcion para evitar una alocacion de memoria en cada ciclo.
 			svm_cross_validation(&prob, &param, 4, target);
 
 			for(int i=0; i<prob.l; i++){
 				if(target[i] == prob.y[i])
 					good_predicts++;
+				target[i] = 0;// <- de una vez se inicializa para el ciclo que viene una vez de haya usado el valor
 			}
+			// Tambien faltaba eliminar la memoria de target, se podia hacer con free(target) pero preferi
+			// cambiarloa a la version de C++ con delete.
+			// como lo puse afuera solo se elimina al final de todos los ciclos
+			// como estaba antes se estaba reservando un espacio nuevo de memoria en cada ciclo del tamaño
+			// del arreglo, ocupando mas RAM en cada iteración.
+			
 			percentage = 100*good_predicts/prob.l;
 			good_predicts = 0;
-
+			
+			// OTRO CAMBIO... creo que es asi, como estaba antes siempre asignaba 
+			// el ultimo C y gamma calculados al best_C y best_gamma. REVISAR igual
+			if(percentage > best_percentage){
+				best_percentage = percentage;
+				best_C = C;
+				best_gamma = gamma;
+			}
+			/*
+			// ASI ESYABA ANTES
 			if(i == -5 && j==-5){
 				best_percentage = percentage;
 				best_C = C;
@@ -3417,8 +3435,10 @@ void bestParametersSVM(struct svm_problem prob, struct svm_parameter param){
 					best_gamma = gamma;
 				}
 			}
+			*/
 		}
 	}
+	delete [] target; // <-- Se libera el espacio de target.
 	std::cout << "Best C: " << best_C << " Best gamma: " << best_gamma << std::endl;
 	std::cout << "Accuracy: " << best_percentage << std::endl;
 }
