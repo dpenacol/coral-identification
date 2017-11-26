@@ -104,4 +104,7 @@ int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch);
 void readTextonsMatlab(cv::Mat dictionary, std::string filename);
 
 void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints);
+
+void saveSVMtxt(struct img_dataHistogram* dataH);
+
 #endif
