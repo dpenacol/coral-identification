@@ -105,6 +105,6 @@ void readTextonsMatlab(cv::Mat dictionary, std::string filename);
 
 void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints);
 
-void saveSVMtxt(struct img_dataHistogram* dataH);
+void saveSVMtxt(struct img_dataHistogram* dataH, int n_images);
 
 #endif
