@@ -152,19 +152,19 @@ int main(int argc, char **argv){
 
     // Obtaining the Textons Histograms from the data_set
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
-    n_images = 100;
-    //getDataHistogram(dataH, dictionaryTextons, n_images);
+    n_images = 695;
+    getDataHistogram(dataH, dictionaryTextons, n_images);
     //printMAXHistogramTextons(dataH, 20);
-    //saveDescriptorH(dataH, n_images);
-    dataH = loadDescriptorH(n_images);
+    saveDescriptorH(dataH, n_images);
+    //dataH = loadDescriptorH(n_images);
     
     // Creating the SVM structures
     struct svm_problem prob;
     struct svm_parameter param;
     struct svm_model *model;
     const char *error_msg;
-
-    getProblemSVM(&prob, dataH, 100, 0, 0);
+/*
+    getProblemSVM2(&prob, dataH, 100, 0, 0);
     //bestParametersSVM(prob, param);
     
     getParamSVM(&param, exp2(-1), exp2(-2));
@@ -175,8 +175,19 @@ int main(int argc, char **argv){
 		exit(1);
 	}
 
-    model = svm_train(&prob, &param);
+    int good_predicts =0;
+    float percentage = 0;
+    double *target = Malloc(double, prob.l);
+	svm_cross_validation(&prob, &param, 4, target);
 
+	for(int i=0; i<prob.l; i++){
+		if(target[i] == prob.y[i])
+			good_predicts++;
+	}
+	percentage = 100*good_predicts/prob.l;
+    std::cout << "Accuracy: " << percentage << std::endl;
+    //model = svm_train(&prob, &param);
+*/
     // Freeing space of the data struct
     delete [] data;
     delete [] dataH;

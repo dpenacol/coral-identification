@@ -114,6 +114,8 @@ void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, in
 // Converts specific textons histogram .txt data into
 // a structure suitable for the LIBSVM
 
+void getProblemSVM2(struct svm_problem* prob, struct img_dataHistogram* dataH, int n_img2008, int n_img2009, int n_img2010);
+
 void getParamSVM(struct svm_parameter* param, double C, double gamma);
 
 void svm_initialize_svm_problem(struct svm_problem* prob);

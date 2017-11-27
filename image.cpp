@@ -84,7 +84,7 @@ void saveDescriptor(struct img_data* data, int n_images){
 
 void saveDescriptorH(struct img_dataHistogram* dataH, int n_images){
     std::ofstream fout;
-    fout.open("dataH_set.bin",std::ios::out| std::ios::binary);
+    fout.open("dataH_set2009.bin",std::ios::out| std::ios::binary);
     int i, j;
     int k;
     for(i = 0; i < n_images; i++){
@@ -426,9 +426,9 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
 }
 
 bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n_images){
-// Reading 2008 set
+// Reading 2009 set
     // Directory of the 2008 set
-    std::string directory = "./Vision_MCR/2008/";
+    std::string directory = "./Vision_MCR/2009/";
 
     // Creating a vector of strings to save the names of the images and txt
     std::vector<std::string> file_names;
@@ -439,7 +439,7 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     int i=0;
     int index_data = 0;
 
-    if ((dir = opendir ("./Vision_MCR/2008/")) != NULL) {
+    if ((dir = opendir ("./Vision_MCR/2009/")) != NULL) {
         while ((ent = readdir (dir)) != NULL) {
             file_names.push_back(std::string(ent->d_name));
         }
@@ -452,11 +452,11 @@ bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n
     // Sorting the vector of strings so it is alphabetically ordered
     std::sort(file_names.begin(), file_names.end());
 
-    // Obtaining the 2008 data set
-    std::cout << "Computing histograms of textons of data set 2008..."<< std::endl;    
+    // Obtaining the 2009 data set
+    std::cout << "Computing histograms of textons of data set 2009..."<< std::endl;    
     for(i = 2; i<2*n_images+2; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Image: ./Vision_MCR/2008/" + file_names.at(i) + "\n";
-        dataH[index_data] = getHistogramDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), dictionary, 2008, index_data);
+        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Image: ./Vision_MCR/2009/" + file_names.at(i) + "\n";
+        dataH[index_data] = getHistogramDescriptor("./Vision_MCR/2009/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2009/" + file_names.at(i)), dictionary, 2009, index_data);
         index_data++;
     }
 
