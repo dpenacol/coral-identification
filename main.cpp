@@ -127,7 +127,7 @@ int main(int argc, char **argv){
     */
 
     // Creating the data struct where the information is going to be saved
-    n_images = 2055;
+    n_images = 1;
     struct img_data* data = new struct img_data[n_images];
 
     // Applying the Maximum Response Filter to each image of the 2008, 2009 and
@@ -151,14 +151,17 @@ int main(int argc, char **argv){
     //readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
 
     // Obtaining the Textons Histograms from the data_set
+    n_images = 1;
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
-    n_images = 695;
+
     getDataHistogram(dataH, dictionaryTextons, n_images);
     //printMAXHistogramTextons(dataH, 20);
-    saveDescriptorH(dataH, n_images);
+    //saveDescriptorH(dataH, n_images);
     //dataH = loadDescriptorH(n_images);
     
+    saveSVMtxt(dataH);
     // Creating the SVM structures
+    /*
     struct svm_problem prob;
     struct svm_parameter param;
     struct svm_model *model;

@@ -630,3 +630,36 @@ void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints){
         std::cout << "----------------------" << std::endl;
     }
 }
+
+// FUNCION PARA IMPRIMIR EN ARCHIVO EL SVM_PROBLEM
+void saveSVMtxt(struct img_dataHistogram* dataH){
+   std::string filename = "coral_scale";
+   int array[10];
+
+   std::ofstream file(filename);
+    if (file.is_open()){
+        int i, j;
+        for(i=0;i<10;i++)
+            array[i] =0;
+        for(i=0; i<200; i++){
+            if(dataH[0].key_Point[i].type != 0){
+                file << dataH[0].key_Point[i].type;
+                file << " ";
+                array[dataH[0].key_Point[i].type]++;// Para mostrar cuantos hay de cada clase (se puede borrar)
+                for(j=0; j<540; j++){
+                    if(dataH[0].key_Point[i].histogram[j] != 0.0){
+                        file << j << ":";
+                        file << dataH[0].key_Point[i].histogram[j];
+                        file << " ";
+                    }
+                }
+                file << std::endl;
+            }
+        }
+        for(i=0;i<10;i++)
+            std::cout << array[i] << std::endl;
+        file.close();
+    } else{
+        std::cout << "Error openning "  + filename << std::endl;
+    } 
+}
