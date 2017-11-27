@@ -159,7 +159,7 @@ int main(int argc, char **argv){
     //saveDescriptorH(dataH, n_images);
     //dataH = loadDescriptorH(n_images);
     
-    saveSVMtxt(dataH);
+    saveSVMtxt(dataH, n_images);
     // Creating the SVM structures
     /*
     struct svm_problem prob;
