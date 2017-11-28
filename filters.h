@@ -17,7 +17,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <cmath>
-//#include <iostream>
+#include <iostream>
 #include <string>
 
 void getNormalizedGaussianKernel(cv::Mat kernel, float sigma);
@@ -118,4 +118,5 @@ void maximumResponseFilter(cv::Mat img_Lab, cv::Mat img_MR, cv::Mat kernel[38]);
 //          -    36: Gaussian
 //          -    37: LoG
 
+cv::Mat getMaximumResponseFilter(std::string filename);
 #endif
