@@ -7,3 +7,5 @@ main
 Vision_MCR*
 Coral_Identification*
 .vs*
+*.bin
+coral-identification
