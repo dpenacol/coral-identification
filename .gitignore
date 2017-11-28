@@ -12,3 +12,6 @@ svm_data.bin
 *.bin
 args
 READMElibsvm
+coral_svm_2008
+coral_svm_2009
+coral_svm_2010

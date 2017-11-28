@@ -151,15 +151,15 @@ int main(int argc, char **argv){
     //readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
 
     // Obtaining the Textons Histograms from the data_set
-    n_images = 1;
+    n_images = 689;
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
 
     getDataHistogram(dataH, dictionaryTextons, n_images);
     //printMAXHistogramTextons(dataH, 20);
-    //saveDescriptorH(dataH, n_images);
-    //dataH = loadDescriptorH(n_images);
+    saveDescriptorH(dataH, n_images);
+    //dataH_2009 = loadDescriptorH(n_images);
     
-    saveSVMtxt(dataH, n_images);
+    //saveSVMtxt(dataH_2009, n_images);
     // Creating the SVM structures
     /*
     struct svm_problem prob;
