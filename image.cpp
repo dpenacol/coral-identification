@@ -125,10 +125,15 @@ struct img_data* loadDescriptor(int n_images){
     return data;
 }
 
-struct img_dataHistogram* loadDescriptorH(int n_images){
+struct img_dataHistogram* loadDescriptorH(int year, int n_images){
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
     std::ifstream fin;
-    fin.open("dataH_set2009.bin", std::ios::in| std::ios::binary);
+    if(year==2008){
+        fin.open("dataH_set2008.bin", std::ios::in| std::ios::binary);}
+    if(year==2009){
+        fin.open("dataH_set2009.bin", std::ios::in| std::ios::binary);}
+    if(year==2010){
+        fin.open("dataH_set2010.bin", std::ios::in| std::ios::binary);}
     int i, j;
     int k;
     if(fin.is_open()){
@@ -633,7 +638,7 @@ void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints){
 
 // FUNCION PARA IMPRIMIR EN ARCHIVO EL SVM_PROBLEM
 void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
-   std::string filename = "coral_svm_2009";
+   std::string filename = "coral_svm_2008";
    int array[10];
    std::ofstream file(filename);
     if (file.is_open()){
@@ -643,7 +648,7 @@ void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
             array[i] =0;
 
         for(k=0; k< n_images; k++){
-            for(i=0; i<200; i++){
+            for(i=0; i<dataH[k].n_labels; i++){
                 if(dataH[k].key_Point[i].type != 0){
                     file << dataH[k].key_Point[i].type;
                     file << " ";
@@ -661,6 +666,59 @@ void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
         }
         for(i=0;i<10;i++)
             std::cout << array[i] << std::endl;
+        file.close();
+    } else{
+        std::cout << "Error openning "  + filename << std::endl;
+    } 
+}
+
+// FUNCION PARA IMPRIMIR EN ARCHIVO EL SVM_PROBLEM  DESDE DOS SETS DISTINTOS
+void saveSVMtxt2(struct img_dataHistogram* dataH_2008, struct img_dataHistogram* dataH_2009, int n_images){
+   std::string filename = "coral_svm_20082009";
+   int array[10];
+   std::ofstream file(filename);
+    if (file.is_open()){
+        int i, j, k;
+
+        for(i=0;i<10;i++)
+            array[i] =0;
+
+        for(k=0; k< n_images/2+20; k++){
+            for(i=0; i<dataH_2008[k].n_labels; i++){
+                if(dataH_2008[k].key_Point[i].type != 0){
+                    file << dataH_2008[k].key_Point[i].type;
+                    file << " ";
+                    array[dataH_2008[k].key_Point[i].type]++;// Para mostrar cuantos hay de cada clase (se puede borrar)
+                    for(j=0; j<540; j++){
+                        if(dataH_2008[k].key_Point[i].histogram[j] != 0.0){
+                            file << j << ":";
+                            file << dataH_2008[k].key_Point[i].histogram[j];
+                            file << " ";
+                        }
+                    }
+                    file << std::endl;
+                }
+            }
+        }
+
+        for(k=0; k< n_images/2; k++){
+            for(i=0; i<dataH_2009[k].n_labels; i++){
+                if(dataH_2009[k].key_Point[i].type != 0){
+                    file << dataH_2009[k].key_Point[i].type;
+                    file << " ";
+                    array[dataH_2009[k].key_Point[i].type]++;// Para mostrar cuantos hay de cada clase (se puede borrar)
+                    for(j=0; j<540; j++){
+                        if(dataH_2009[k].key_Point[i].histogram[j] != 0.0){
+                            file << j << ":";
+                            file << dataH_2009[k].key_Point[i].histogram[j];
+                            file << " ";
+                        }
+                    }
+                    file << std::endl;
+                }
+            }
+        }
+
         file.close();
     } else{
         std::cout << "Error openning "  + filename << std::endl;

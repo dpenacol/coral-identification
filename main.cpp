@@ -152,14 +152,16 @@ int main(int argc, char **argv){
 
     // Obtaining the Textons Histograms from the data_set
     n_images = 689;
-    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+    struct img_dataHistogram* dataH_2008 = new struct img_dataHistogram[671];
+    struct img_dataHistogram* dataH_2009 = new struct img_dataHistogram[695];
 
-    getDataHistogram(dataH, dictionaryTextons, n_images);
+    //getDataHistogram(dataH, dictionaryTextons, n_images);
     //printMAXHistogramTextons(dataH, 20);
-    saveDescriptorH(dataH, n_images);
-    //dataH_2009 = loadDescriptorH(n_images);
-    
-    //saveSVMtxt(dataH_2009, n_images);
+    //saveDescriptorH(dataH, n_images);
+    dataH_2008 = loadDescriptorH(2008, 671);
+    dataH_2009 = loadDescriptorH(2009, 695);
+
+    saveSVMtxt2(dataH_2008, dataH_2009, 400);
     // Creating the SVM structures
     /*
     struct svm_problem prob;
@@ -193,6 +195,7 @@ int main(int argc, char **argv){
 */
     // Freeing space of the data struct
     delete [] data;
-    delete [] dataH;
+    delete [] dataH_2008;
+    delete [] dataH_2009;
     return 0;
 }
