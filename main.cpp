@@ -28,7 +28,9 @@ std::istream& operator>>(std::istream& is, std::tuple<int, int, int>& ints){
 }
 
 int main(int argc, char **argv){
+    bool arg_svm = false;
     int n_images, i, j, k, n;
+    int start_index, finish_index;
     struct img_data* descriptors;
     struct img_dataHistogram* descriptorsH;
     cv::Mat* imgs_MR;
@@ -56,7 +58,7 @@ int main(int argc, char **argv){
     args::ValueFlag<std::string> load(arguments, "file.bin", "name of binary file to load (with .bin)", {'l'});
     args::ValueFlag<std::string> save(arguments, "file", "name of binary file to save data (with .bin), no file will be saved by default", {'s'});
     args::ValueFlag<std::tuple<int, int, int>> n_img(arguments, "Integer", "Number of images to use for each set", {'n'});
-    
+    args::ValueFlag<std::tuple<int, int, int>> index(arguments, "Integers", "index images to calculate the Histogram descriptor. Separate by commas", {'m'});
 
     args::Group km(arguments, "(Optional) Modify the parameters of K-means algorithm. this options is only for dictionary step.", args::Group::Validators::DontCare);
     args::ValueFlag<int> kmeans(km, "Criteria", "Stop criteria for K-means clustering (1 for iteration, 2 for epsilon, 3 both)[If set mus specify all the K-means criteria parameters].", {'k'});
@@ -148,21 +150,28 @@ int main(int argc, char **argv){
         else
             std::cout << "total images to use: "<< n_images <<std::endl;
     }
-    if ((histogram || descriptor) && !load){
-        // Read the filenames from default directory
+    if(index){
+        start_index = std::get<0>(args::get(index));
+        finish_index = std::get<1>(args::get(index));
+    }else{
+        start_index = 0;
+        finish_index = n_images;
+    }
 
+    if (!load || histogram){
+        // Read the filenames from default directory
         std::cout << "Reading filenames from  Vision_MCR directory" << std::endl;
         file_names = getFileNames(valid_sets, n_imgs);
         // Get the maximun Response Filter
         std::cout << "calculating  the Maximun Response Filter for: "<<n_images <<" images" << std::endl;
         imgs_MR = new cv::Mat[n_images];
         for(j=0; j<n_images ; j++){
-            std::cout <<"\r" <<"[ " << porcentage(j+1, n_images) << " %]";
+            std::cout <<"[ " << porcentage(j, n_images) << " %]"<<std::flush<<"\r";
             imgs_MR[j] = getMaximumResponseFilter(file_names.at(j));
         }
-        std::cout <<std::endl;
+        std::cout << "[ " << porcentage(j, n_images) << " %]"<< std::endl;
     }
-    if ((descriptor && !load) || ((dictionary || histogram) && !load)){
+    if ((descriptor || dictionary || histogram) && !load){
         descriptors = new struct img_data[n_images];
         std::cout << "Calculating texture descriptor for: "<< n_images << " images" << std::endl;
 
@@ -172,12 +181,13 @@ int main(int argc, char **argv){
         for(k=0; k<3; k++){
             if(valid_sets[k]){
                 for(j=0; j<n_images ; j++){
+                    std::cout << "Set:" <<years[k]<<" [" + std::to_string(porcentage(n+1, n_imgs[k])) + '%' + "] "+ file_names.at(n)<<std::flush<<"\r";
                     descriptors[n] = getDescriptor(file_names.at(n)+".txt", imgs_MR[n], years[k],n);
-                    std::cout << "\r"<< "Set:" <<years[k]<<" [" + std::to_string(porcentage(n+1, n_imgs[k])) + '%' + "] "+ file_names.at(n);
                     n++;
                 }
             }
         }
+        std::cout <<std::endl;
         // Save the Maximum Response Filter information in a binary file
         if(save && descriptor){
             savefile = args::get(save);
@@ -195,10 +205,9 @@ int main(int argc, char **argv){
     if(dictionary){
         if(load){
             // Load the image data from a binary file
-            std::cout << "descriptor Loaded from: "<< "\""<< args::get(load) << "\"" << std::endl;
+            std::cout << "Loading descriptor: "<< "\""<< args::get(load) << "\"" << std::endl;
             descriptors = loadDescriptor(n_images, args::get(load));
         }
-        int start_index = 0, finish_index = n_images;
         // Obtaining the textons from a group of images of the data
         std::cout << "Calculating the texture elements "<<  std::endl;
         getDictionaryTextons(dictionaryTextons, descriptors, start_index, finish_index);
@@ -224,20 +233,19 @@ int main(int argc, char **argv){
         }
         else{
             std::cout << "Calculating the dictionary of texture elements "<<  std::endl;
-            int start_index = 0, finish_index = n_images;
             // Obtaining the dictionary of textons from a group of images of the data
             getDictionaryTextons(dictionaryTextons, descriptors, start_index, finish_index);
         }
+        n=0;
         for(k=0; k<3; k++){
             if(valid_sets[k]){
-                std::cout << "Set: " << years[k] << std::endl;
-                for(j = 2; j<2*n_images+2; j+=2){
-                    std::cout <<"Set: "<<years[k]<< "[" + std::to_string(porcentage(n, n_images)) + '%' + "] Image: " + file_names.at(j) << std::endl;
+                std::cout <<"Set: "<<years[k]<<std::endl; 
+                for(j = 0; j<n_images; j++){
+                    std::cout << "[ " << porcentage(j,n_images) << " %]" << std::flush << "\r";
                     descriptorsH[n] = getHistogramDescriptor(file_names.at(j)+".txt", imgs_MR[j], dictionaryTextons, years[k], n);
                     n++;
-                    std::cout << "\r[ " << porcentage(j,2*n_images+2) << " %]";
                 }
-                std::cout << "\r[ " << 100 << " %]" << std::endl;
+                std::cout << "[ " << 100 << " %]" << std::flush << std::endl;
             }
         }
         // Deleting the names of the set
@@ -251,19 +259,19 @@ int main(int argc, char **argv){
         saveDescriptorH(descriptorsH, n_images, savefile);
         std::cout << "Saved histogram descriptor in  "<<  savefile << std::endl;  
     }
+    
+
     if(externalsvm){
-        if(load){
-            loadfile = args::get(load); 
-        }
-        else{
-            loadfile = "histogram.bin";
-        }
+        loadfile = args::get(externalsvm); 
+
         std::cout << "Obtaining the structure problem file from: "<<  loadfile << std::endl;
-        descriptorsH = loadDescriptorH(n_images, loadfile);
+        descriptorsH = loadDescriptorH(2, loadfile);
         
         // Creating the SVM structures
-        saveSVMtxt(descriptorsH, n_images);
+        saveSVMtxt(descriptorsH);
     }
+
+    
     /*if(prob){
         
         //CODIGO PARA OBTENER EL SVM-PROBLEM

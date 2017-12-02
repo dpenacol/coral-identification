@@ -108,8 +108,6 @@ struct img_data* loadDescriptor(int n_images, std::string filename){
     int i, j;
     int k;
     if(fin.is_open()){
-        std::cout << "Loading data_set.bin..." << std::endl;
-
         for(i = 0; i < n_images; i++){
             fin.read((char *)&data[i], sizeof(struct img_data));
             for(j=0; j<data[i].n_labels; j++){
@@ -119,10 +117,10 @@ struct img_data* loadDescriptor(int n_images, std::string filename){
                 }
             }
         }
-        std::cout << "Success loading of data_set.bin" << std::endl;
+        std::cout << "Success loading of "+filename << std::endl;
         fin.close();
     }else{
-        std::cout << "Error loading data_set.bin" << std::endl;
+        std::cout << "Error loading "+filename << std::endl;
     }
     return data;
 }
@@ -134,8 +132,7 @@ struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
     int i, j;
     int k;
     if(fin.is_open()){
-        std::cout << "Loading dataH_set.bin..." << std::endl;
-
+       
         for(i = 0; i < n_images; i++){
             fin.read((char *)&dataH[i], sizeof(struct img_dataHistogram));
             for(j=0; j<dataH[i].n_labels; j++){
@@ -145,7 +142,6 @@ struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
                 }
             }
         }
-        std::cout << "Success loading of dataH_set.bin" << std::endl;
         fin.close();
     }else{
         std::cout << "Error loading dataH_set.bin" << std::endl;
@@ -238,7 +234,7 @@ std::vector<std::string> getFileNames( bool* valid_sets, int* n_imgs){
 void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int start_index, int finish_index){
     // Parameters of K-means algorithm
     int clusters = 15;
-    int attempts = 200;
+    int attempts = 100;
     int initial_centers = cv::KMEANS_PP_CENTERS;
 
     // Creating the structures for each class
@@ -248,8 +244,8 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
     int row[9];
 
     // Initializing each class textons matrix
-    int i, j, k;
-    int m, n;
+    int i=0, j=0, k=0;
+    int m=0, n=0;
     for(i=0; i<9; i++){
         centers[i] = cv::Mat(15,24,CV_32FC1);        
         row[i] = 0;
@@ -285,13 +281,11 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
             }
         }
     }  
-    float aux = 0;
+
     // Applying the K-means algorithm for each class_data
     for(int m=0; m<9; m++){
         std::cout << "\r" <<"[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of the " + std::to_string(m + 1) + " class.\n";
-        kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER, 800, 0.0005), attempts, initial_centers, centers[m]);
-        aux = centers[0].at<float>(0,0);
-        aux = centers[1].at<float>(0,0);
+        kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER, 2000, 0.0005), attempts, initial_centers, centers[m]);
     }
 
     // Saving the 135 textons on the dictionary
@@ -304,8 +298,6 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
             n++;
         }
     }
-    aux = dictionaryTextons.at<float>(0,0);
-    aux = dictionaryTextons.at<float>(134,0);
 }
 
 int getNearestTexton(cv::Mat dictionaryTextons, float r24[24]){
@@ -383,7 +375,7 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
     float r24[24];
     dataH.index = 0;
     dataH.year = 0;
-    
+
     if(year == 2008 || year == 2009){
         dataH.n_labels = 200;
     }
@@ -408,13 +400,14 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
         std::getline(file,str);
         dataH.index = index;
         dataH.year = year;
-        for(i=0; i<dataH.n_labels; i++){        
-            file >> str;
+        for(i=0; i<dataH.n_labels; i++){ 
+            file >> str;       
             dataH.key_Point[i].pt.y = atoi(str.c_str())/2;
-            file >> str; 
+            file >> str;
             dataH.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str;
             dataH.key_Point[i].type = str2label(str);
+            std::cout << dataH.key_Point[i].type << std::endl;
         }
         for(i=0; i< dataH.n_labels ; i++){
             if(dataH.key_Point[i].type != 0){
@@ -540,7 +533,7 @@ void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints){
 }
 
 // FUNCION PARA IMPRIMIR EN ARCHIVO EL SVM_PROBLEM
-void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
+void saveSVMtxt(struct img_dataHistogram* dataH){
    std::string filename = "data-for-libsvm";
    int array[10];
 
@@ -550,7 +543,7 @@ void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
 
         for(i=0;i<10;i++)
             array[i] =0;
-
+        int n_images = sizeof(dataH)/sizeof(dataH[0]);
         for(k=0; k< n_images; k++){
             for(i=0; i<200; i++){
                 if(dataH[k].key_Point[i].type != 0){
@@ -569,7 +562,7 @@ void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
             }
         }
         for(i=0;i<10;i++)
-            std::cout << array[i] << std::endl;
+            std::cout << "items for class "<<i<<": "<<array[i] << std::endl;
         file.close();
     } else{
         std::cout << "Error openning "  + filename << std::endl;
