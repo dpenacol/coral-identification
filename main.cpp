@@ -28,145 +28,269 @@ std::istream& operator>>(std::istream& is, std::tuple<int, int, int>& ints){
 }
 
 int main(int argc, char **argv){
-    int n_images;
-    std::string outfile, infile;
+    int n_images, i, j, k, n;
+    struct img_data* descriptors;
+    struct img_dataHistogram* descriptorsH;
+    cv::Mat* imgs_MR;
+
+    const int years[3] = {2008, 2009, 2010};
+    int n_imgs[] = {_nImg_2008,  _nImg_2009,  _nImg_2010};
+    bool valid_sets[] = {false,false, false};
+
+    std::string loadfile, savefile;
+    std::vector<std::string> file_names;
 
     // Argument Parser flags
     args::ArgumentParser parser("[EC5803] Coral Identification", "Authors: Diego Peña, Victor Garcia, Fabio Morales, Andreina Duarte");
-    args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
-    args::ValueFlag<std::string> load(parser, "File.bin", "name of binary file to load (with .bin)", {'l', "load"});
-    args::ValueFlag<std::string> output(parser, "Filename", "name of binary file to save data (with .bin), no file will be saved by default", {'o', "output"});
-    args::ValueFlag<int> n_img(parser, "Integer", "Number of images to test (Temporal option)", {'n',"number"});
-    args::ValueFlag<std::string> dic(parser, "Filename", "Create a Dictionary of Textons and save in Filename.bin (with .bin)", {'d'});
-    args::Flag train(parser, "t", "Train the SVM (must specify a years of dataset)", {'t', "train"});
-    args::Group aux(parser, "  (Optional)", args::Group::Validators::All);
-    args::Group nxor(aux, "Modify the parameters of K-means algorithm:", args::Group::Validators::AllOrNone);
-    args::ValueFlag<int> kmeans(nxor, "Criteria", "Stop criteria for K-means clustering (1 for iteration, 2 for epsilon, 3 both)[If set mus specify all the K-means criteria parameters]", {'k'});
-    args::ValueFlag<int> i(nxor, "Integer", "Iteration numbers for K-means clustering (0 if not used)", {'i'});
-    args::ValueFlag<int> a(nxor, "Integer", "Attempt number for K-means clustering (0 if not used)", {'a'});
-    args::ValueFlag<float> e(nxor, "Float", "epsilon: distance theshold (0 if not used)", {'e'});
+    
+    args::Group p(parser, "", args::Group::Validators::DontCare);
+    args::HelpFlag help(p, "help", "Display this help menu", {'h', "help"});
+    args::Group imgproc(p, "IMAGE PROCESSING COMMANDS");
+    args::Flag descriptor(imgproc, "descriptor", "Get the descriptor for the labeled images. Use the -s command to change the default binary filename.(\"descriptor.bin\")", {"descriptor"});
+    args::Flag dictionary(imgproc, "dictionary", "Get the Dictionary of textons. By default the descriptor will be calculated for this step. to use an existing \
+                                       descriptor file use the -l argument. Use the -s argument to change the default binary filename = \"dictionary.bin\"", {"dictionary"});
+    args::Flag histogram(imgproc, "histogram", "Get the histogram descriptor used for clasification. By default the dictionary will be calculate for this step. to use an existing \
+                                      dictionary file use the -l argument. Use the -s argument to change the default binary filename = \"histogram.bin\"",  {"histogram"});
+    
+    args::Group arguments(imgproc, "ARGUMENTS");
+    args::ValueFlag<std::string> load(arguments, "file.bin", "name of binary file to load (with .bin)", {'l'});
+    args::ValueFlag<std::string> save(arguments, "file", "name of binary file to save data (with .bin), no file will be saved by default", {'s'});
+    args::ValueFlag<std::tuple<int, int, int>> n_img(arguments, "Integer", "Number of images to use for each set", {'n'});
+    
+
+    args::Group km(arguments, "(Optional) Modify the parameters of K-means algorithm. this options is only for dictionary step.", args::Group::Validators::DontCare);
+    args::ValueFlag<int> kmeans(km, "Criteria", "Stop criteria for K-means clustering (1 for iteration, 2 for epsilon, 3 both)[If set mus specify all the K-means criteria parameters].", {'k'});
+    args::ValueFlag<int> it(km, "Integer", "Iteration numbers for K-means clustering (0 if not used).", {'i'});
+    args::ValueFlag<int> a(km, "Integer", "Attempt number for K-means clustering (0 if not used).", {'a'});
+    args::ValueFlag<float> e(km, "Float", "epsilon: distance theshold (0 if not used).", {'e'});
+
+    args::Group svm(p, "SVM COMMANDS");
+    //args::Flag problem(svm, "svm-problem", "Construct the file for train the SVM.",{"problem"});
+    //args::Flag grid(svm, "svm-grid", "optimize the C ang gamma parameters using an logarithmic grid search with 4-fold cross validation in the {-5,5} interval.",{"grid"});
+    //args::Flag train(svm, "svm-train", "train the SVM. By default Radial Basis Functionkernel will be used.",{"train"});
+    //args::Flag predict(svm, "svm-predict", "Predict labels of the test file.",{"predict"});
+    args::ValueFlag<std::string> externalsvm(svm, "file", "Generate a txt problem file to use with external libsvm. specify the input histogram filename.bin,\
+                                                   a svm-problem file will be generated.", {"problem"});
+    //args::ValueFlag<std::string> prob(svm, "file", "Specify the problem file to train the SVM.", {'t'});
+    //args::ValueFlag<std::string> model(svm, "file.model", "Specify the the model file generated by svm-train", {'m'});
+    //args::ValueFlag<std::string> pred(svm, "file", "svm-predict will produce output in the output_file.", {'p'});
+    //args::ValueFlag<std::string> test(svm, "file", "Specify the test data you want to predict.", {'d'});
+
     args::Positional<std::tuple<int, int, int> > year(parser, "YEARS", "years of set to work with (separate by commas)");
     
     try{
         parser.ParseCLI(argc, argv);
+        std::cout << std::endl;
     }
     catch (args::Help){
         std::cout << parser;
         return 0;
     }
     catch (args::ParseError e){
-        /*
-        INSERTE CODIGO PARA ERRORES DE VALIDACION DE PARAMETROS
-        */
         std::cerr << e.what() << std::endl;
         std::cerr << parser;
         return 1;
     }
     catch (args::ValidationError e){
-        /*
-        INSERTE CODIGO PARA ERRORES DE VALIDACION DE GRUPO
-        */
-        std::cerr << "If k flag is set, must specify all the K-means criteria parameters" << std::endl;
+        if(!descriptor || !dictionary || !histogram)
+            std::cerr << "Select at most one command" << std::endl;
+        if(kmeans)
+            std::cerr << "Select all the Kmeans parameters" << std::endl;
         std::cerr << parser;
         return 1;
     }
-    if(load){
-        /*
-        INSERTE CODIGO PARA LA BANDERA L
-        */
-        infile = args::get(load);
-        std::cout << "File to load: " << "\"" <<infile <<"\""<<std::endl;
-    }
-    if (output){
-        /*
-        INSERTE CODIGO PARA LA BANDERA O
-        */
-        outfile = args::get(output);
-        std::cout << std::endl << "Output file: " << "\"" << outfile << "\""<< std::endl; 
-    }
     if (year){
-        /*
-        INSERTE CODIGO PARA LA BANDERA YEAR
-        */
-        int valid_year[3] = {2008, 2009, 2010};
-        int get_years[3] = {0,0,0};
+        std::vector<int> get_years;
         bool yr_check=false;
-        get_years[0]=std::get<0>(args::get(year));
-        get_years[1]=std::get<1>(args::get(year));
-        get_years[2]=std::get<2>(args::get(year));
-        for(int i=0; i<3; i++){
-            for(int j=0; j<3; j++){
-                if( get_years[i] == valid_year[j] ){
-                    yr_check=true;
+        
+        get_years.push_back(std::get<0>(args::get(year)));
+        get_years.push_back(std::get<1>(args::get(year)));
+        get_years.push_back(std::get<2>(args::get(year)));
+        for(i=0; i<3; i++){
+            for(j=0; j<3; j++){
+                if( get_years.at(j) == years[i] ){
+                    valid_sets[i]=true;
+                    break;
                 }
             }
-            if(yr_check){
-                std::cout << "\nSet to load: ";
-                std::cout << " " << get_years[i];
-                yr_check=false;
-            }
         }
-        std::cout << std::endl;
-    } 
-    if(train){
-        /*
-        INSERTE CODIGO PARA LA BANDERA K
-        */
-        std::cout << "SVM train: " << std::endl;
+        for(i=0; i<3; i++)
+            if(valid_sets[i])
+                std::cout << "Valid Set: " << years[i] << std::endl;
     }
     if(n_img){
-        /*
-        INSERTE CODIGO PARA LA BANDERA N
-        */
-        n_images = args::get(n_img);
-        std::cout << "Test with: " <<  n_images << std::endl;
+        std::vector<int> get_nimages;
+        
+        get_nimages.push_back(std::get<0>(args::get(n_img)));
+        get_nimages.push_back(std::get<1>(args::get(n_img)));
+        get_nimages.push_back(std::get<2>(args::get(n_img)));
+        n=0;
+        for(i=0;i<3;i++){
+            if(valid_sets[i]){
+                n_imgs[i]=get_nimages.at(n++);
+                n_images+=n_imgs[i];
+                std::cout << "Test set "<< years[i] <<" with " << n_imgs[i]<< " images" << std::endl;
+            }
+            else{
+                n_imgs[i]=0;
+            }
+        }
+        std::cout << "total images to use: "<< n_images <<std::endl;
+    }else{
+        for(i=0; i<3; i++){
+            if(valid_sets[i]){
+                n_images+=n_imgs[i];
+                std::cout << "Test set "<< years[i] <<" with " << n_imgs[i]<< " images" << std::endl;
+            }
+        }
+        if(n_images == 0)
+            std::cout << "no set selected " <<std::endl;
+        else
+            std::cout << "total images to use: "<< n_images <<std::endl;
     }
-    /*
-    CODIGO EN FUNCION DE LAS BANDERAS ACTIVAS
-    */
+    if ((histogram || descriptor) && !load){
+        // Read the filenames from default directory
 
-    // Creating the data struct where the information is going to be saved
-    n_images = 1;
-    struct img_data* data = new struct img_data[n_images];
+        std::cout << "Reading filenames from  Vision_MCR directory" << std::endl;
+        file_names = getFileNames(valid_sets, n_imgs);
+        // Get the maximun Response Filter
+        std::cout << "calculating  the Maximun Response Filter for: "<<n_images <<" images" << std::endl;
+        imgs_MR = new cv::Mat[n_images];
+        for(j=0; j<n_images ; j++){
+            std::cout <<"\r" <<"[ " << porcentage(j+1, n_images) << " %]";
+            imgs_MR[j] = getMaximumResponseFilter(file_names.at(j));
+        }
+        std::cout <<std::endl;
+    }
+    if ((descriptor && !load) || ((dictionary || histogram) && !load)){
+        descriptors = new struct img_data[n_images];
+        std::cout << "Calculating texture descriptor for: "<< n_images << " images" << std::endl;
 
-    // Applying the Maximum Response Filter to each image of the 2008, 2009 and
-    // 2010 set. Then reads each image info .txt to save the results on data structure
-    // getDataSet(data, n_images);
-
-    // Save the Maximum Response Filter information in a binary file
-    // saveDescriptor(data, n_images);
-
-    // Load the image data from a binary file
-    data = loadDescriptor(n_images);
-    
-    // Obtaining the textons from a group of images of the data
+        // Get the texture descriptor for selected images
+        int j, k, n=0;
+        int index_data=0;
+        for(k=0; k<3; k++){
+            if(valid_sets[k]){
+                for(j=0; j<n_images ; j++){
+                    descriptors[n] = getDescriptor(file_names.at(n)+".txt", imgs_MR[n], years[k],n);
+                    std::cout << "\r"<< "Set:" <<years[k]<<" [" + std::to_string(porcentage(n+1, n_imgs[k])) + '%' + "] "+ file_names.at(n);
+                    n++;
+                }
+            }
+        }
+        // Save the Maximum Response Filter information in a binary file
+        if(save && descriptor){
+            savefile = args::get(save);
+            saveDescriptor(descriptors, n_images,  savefile );
+            std::cout << "saved Descriptor in  "<< "\"" <<  savefile << "\"" << std::endl;
+        }
+        else if(!save && descriptor){
+            saveDescriptor(descriptors, n_images, "descriptor.bin");
+            std::cout << "saved Descriptor in  "<< "descriptor.bin" << std::endl;
+        }
+        // Deleting the names of the set
+        file_names.erase(file_names.begin(), file_names.end());
+    }
     cv::Mat dictionaryTextons(135, 24, CV_32FC1);
-    int start_index = 0, finish_index = 2055;
+    if(dictionary){
+        if(load){
+            // Load the image data from a binary file
+            std::cout << "descriptor Loaded from: "<< "\""<< args::get(load) << "\"" << std::endl;
+            descriptors = loadDescriptor(n_images, args::get(load));
+        }
+        int start_index = 0, finish_index = n_images;
+        // Obtaining the textons from a group of images of the data
+        std::cout << "Calculating the texture elements "<<  std::endl;
+        getDictionaryTextons(dictionaryTextons, descriptors, start_index, finish_index);
+        
+        // Save the Maximum Response Filter information in a binary file
+        if(save && dictionary){
+            
+            saveDictionaryTextons(dictionaryTextons, args::get(save));  
+            std::cout << "saved Dictionary in  "<<  args::get(save) << std::endl;
+        }
+        else if(!save && dictionary){
+            saveDictionaryTextons(dictionaryTextons, "dictionary.bin");  
+            std::cout << "saved Dictionary in  "<<  "dictionary.bin" << std::endl;
+        }
+    }
+    if(histogram){
+        descriptorsH = new struct img_dataHistogram[n_images];
 
-    //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
-    //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
-
-    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
-    //readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
-
-    // Obtaining the Textons Histograms from the data_set
-    n_images = 1;
-    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
-
-    getDataHistogram(dataH, dictionaryTextons, n_images);
-    //printMAXHistogramTextons(dataH, 20);
-    //saveDescriptorH(dataH, n_images);
-    //dataH = loadDescriptorH(n_images);
-    
-    saveSVMtxt(dataH, n_images);
-    // Creating the SVM structures
-    /*
+        if(load){
+            // Load the image data from a binary file
+            loadDictionaryTextons(dictionaryTextons, args::get(load));
+            std::cout << "Dictionary of texture elemets Loaded: "<< "\"" <<args::get(load) << "\""<<std::endl;
+        }
+        else{
+            std::cout << "Calculating the dictionary of texture elements "<<  std::endl;
+            int start_index = 0, finish_index = n_images;
+            // Obtaining the dictionary of textons from a group of images of the data
+            getDictionaryTextons(dictionaryTextons, descriptors, start_index, finish_index);
+        }
+        for(k=0; k<3; k++){
+            if(valid_sets[k]){
+                std::cout << "Set: " << years[k] << std::endl;
+                for(j = 2; j<2*n_images+2; j+=2){
+                    std::cout <<"Set: "<<years[k]<< "[" + std::to_string(porcentage(n, n_images)) + '%' + "] Image: " + file_names.at(j) << std::endl;
+                    descriptorsH[n] = getHistogramDescriptor(file_names.at(j)+".txt", imgs_MR[j], dictionaryTextons, years[k], n);
+                    n++;
+                    std::cout << "\r[ " << porcentage(j,2*n_images+2) << " %]";
+                }
+                std::cout << "\r[ " << 100 << " %]" << std::endl;
+            }
+        }
+        // Deleting the names of the set
+        file_names.erase(file_names.begin(), file_names.end());
+        savefile = "histogram.bin";
+        if(save && histogram){
+            // Save the Maximum Response Filter information in a binary file
+            savefile = args::get(save);
+            
+        }
+        saveDescriptorH(descriptorsH, n_images, savefile);
+        std::cout << "Saved histogram descriptor in  "<<  savefile << std::endl;  
+    }
+    if(externalsvm){
+        if(load){
+            loadfile = args::get(load); 
+        }
+        else{
+            loadfile = "histogram.bin";
+        }
+        std::cout << "Obtaining the structure problem file from: "<<  loadfile << std::endl;
+        descriptorsH = loadDescriptorH(n_images, loadfile);
+        
+        // Creating the SVM structures
+        saveSVMtxt(descriptorsH, n_images);
+    }
+    /*if(prob){
+        
+        //CODIGO PARA OBTENER EL SVM-PROBLEM
+        
+    }
+    if(grid){
+        
+       // CODIGO PARA OBTENER EL MEJOR C Y GAMMA
+        
+    }
+    if(model){
+        
+        //CODIGO PARA OBTENER EL ARCHIVO.MODEL (ENTRENAR SVM)
+        
+    }
+    if(test){
+        
+        // PARA SELECCIONAR EL ARCHIVO A PROBAR
+        
+    }*/
+/*
     struct svm_problem prob;
     struct svm_parameter param;
     struct svm_model *model;
     const char *error_msg;
 
-    getProblemSVM(&prob, dataH, 100, 0, 0);
+    getProblemSVM(&prob, descriptorsH, 100, 0, 0);
     //bestParametersSVM(prob, param);
     
     getParamSVM(&param, exp2(-1), exp2(-2));
@@ -178,9 +302,11 @@ int main(int argc, char **argv){
 	}
     
     model = svm_train(&prob, &param);
-    */
-    // Freeing space of the data struct
-    delete [] data;
-    delete [] dataH;
+    
+*/
+    // Freeing space for used arrays
+    delete [] descriptors;
+    delete [] descriptorsH;
+   // delete [] imgs_MR;
     return 0;
 }

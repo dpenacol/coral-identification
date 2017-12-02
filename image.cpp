@@ -10,6 +10,7 @@
 #include "filters.h"
 #include "histogram.h"
 
+
 struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, int index){
     struct img_data data;
     data.index = 0;
@@ -22,18 +23,19 @@ struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, in
     }
     std::ifstream file(fileName);
     if (file.is_open()){
-        int i, j;
+        int i=0, j=0;
         std::string str;
         std::getline(file,str);
         data.index = index;
         data.year = year;
-        for(i=0; i<data.n_labels; i++){        
+        while(!file.eof()){        
             file >> str;
             data.key_Point[i].pt.y = atoi(str.c_str())/2;
             file >> str; 
             data.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str;
             data.key_Point[i].type = str2label(str);
+            i++;
         }
         for(i=0; i< data.n_labels ; i++){
             for(j=0; j<24; j++){
@@ -65,9 +67,9 @@ void readTextonsMatlab(cv::Mat dictionary, std::string filename){
     }
 }
 
-void saveDescriptor(struct img_data* data, int n_images){
+void saveDescriptor(struct img_data* data, int n_images, std::string filename){
     std::ofstream fout;
-    fout.open("data_set.bin",std::ios::out| std::ios::binary);
+    fout.open(filename.c_str(),std::ios::out| std::ios::binary);
     int i, j;
     int k;
     for(i = 0; i < n_images; i++){
@@ -82,9 +84,9 @@ void saveDescriptor(struct img_data* data, int n_images){
     fout.close();
 }
 
-void saveDescriptorH(struct img_dataHistogram* dataH, int n_images){
+void saveDescriptorH(struct img_dataHistogram* dataH, int n_images, std::string filename){
     std::ofstream fout;
-    fout.open("dataH_set.bin",std::ios::out| std::ios::binary);
+    fout.open(filename.c_str(),std::ios::out| std::ios::binary);
     int i, j;
     int k;
     for(i = 0; i < n_images; i++){
@@ -99,10 +101,10 @@ void saveDescriptorH(struct img_dataHistogram* dataH, int n_images){
     fout.close();
 }
 
-struct img_data* loadDescriptor(int n_images){
+struct img_data* loadDescriptor(int n_images, std::string filename){
     struct img_data* data = new struct img_data[n_images];
     std::ifstream fin;
-    fin.open("data_set.bin", std::ios::in| std::ios::binary);
+    fin.open(filename.c_str(), std::ios::in| std::ios::binary);
     int i, j;
     int k;
     if(fin.is_open()){
@@ -125,10 +127,10 @@ struct img_data* loadDescriptor(int n_images){
     return data;
 }
 
-struct img_dataHistogram* loadDescriptorH(int n_images){
+struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
     std::ifstream fin;
-    fin.open("dataH_set.bin", std::ios::in| std::ios::binary);
+    fin.open(filename.c_str(), std::ios::in| std::ios::binary);
     int i, j;
     int k;
     if(fin.is_open()){
@@ -192,94 +194,45 @@ int porcentage(int index_data, int n_images){
     return index_data*100/n_images;
 }
 
-bool getDataSet(struct img_data* data, int n_images){
-// Reading 2008 set
-    // Directory of the 2008 set
-    std::string directory = "./Vision_MCR/2008/";
+std::vector<std::string> getFileNames( bool* valid_sets, int* n_imgs){
 
+    // Directories of the 2008, 2009 and 2010 sets
+    std::string directories[3] = {"./Vision_MCR/2008/", "./Vision_MCR/2009/", "./Vision_MCR/2010/"};
+    
     // Creating a vector of strings to save the names of the images and txt
+    std::vector<std::string> file_names_aux;
     std::vector<std::string> file_names;
 
     // Reading the folder for each element and save their names in file_names
     DIR *dir;
     struct dirent *ent;
-    int i;
+    int i, j;
     int index_data = 0;
 
-    if ((dir = opendir ("./Vision_MCR/2008/")) != NULL) {
-        while ((ent = readdir (dir)) != NULL) {
-            file_names.push_back(std::string(ent->d_name));
+    for(i=0; i< 3 ; i++){
+        if(valid_sets[i]){
+            if ((dir = opendir(directories[i].c_str())) != NULL) {
+                while ((ent = readdir (dir)) != NULL) {
+                    file_names_aux.push_back(std::string(ent->d_name));
+                }
+                closedir (dir);
+            } else {
+            // If the directory could not be opened
+                perror ("Directory could not be opened");
+                return file_names;
+            }
+            // Sorting the vector of strings so it is alphabetically ordered
+            std::sort(file_names_aux.begin(), file_names_aux.end());
+
+            // Obtaining the data set   
+            for(j = 2; j<n_imgs[i]*2+2; j+=2){
+                file_names.push_back(directories[i] + file_names_aux.at(j));
+            }
+            // Deleting the names of the set
+            file_names_aux.erase(file_names_aux.begin(), file_names_aux.end());
         }
-        closedir (dir);
-    } else {
-    // If the directory could not be opened
-        perror ("");
-        return false;
     }
-    // Sorting the vector of strings so it is alphabetically ordered
-    std::sort(file_names.begin(), file_names.end());
-
-    // Obtaining the 2008 data set    
-    for(i = 2; i<1344; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2008/" + file_names.at(i) + "\n";
-        data[index_data] = getDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), 2008, index_data);
-        index_data++;
-    }
-
-    // Deleting the names of the set
-    file_names.erase(file_names.begin(), file_names.end());
-
-// Reading 2009 set
-    // Directory of the 2009 set
-    if ((dir = opendir ("./Vision_MCR/2009/")) != NULL) {
-        while ((ent = readdir (dir)) != NULL) {
-            file_names.push_back(std::string(ent->d_name));
-        }
-        closedir (dir);
-    } else {
-    // If the directory could not be opened
-        perror ("");
-        return false;
-    }
-    // Sorting the vector of strings so it is alphabetically ordered
-    std::sort(file_names.begin(), file_names.end());
-
-    // Obtaining the 2009 data set    
-    for(i = 2; i<1392; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2009/" + file_names.at(i) + "\n";
-        data[index_data] = getDescriptor("./Vision_MCR/2009/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2009/" + file_names.at(i)), 2009, index_data);
-        index_data++;
-    }
-
-    // Deleting the names of the set
-    file_names.erase(file_names.begin(), file_names.end());
-
-// Reading 2010 set
-    // Directory of the 2010 set
-    if ((dir = opendir ("./Vision_MCR/2010/")) != NULL) {
-        while ((ent = readdir (dir)) != NULL) {
-            file_names.push_back(std::string(ent->d_name));
-        }
-        closedir (dir);
-    } else {
-    // If the directory could not be opened
-        perror ("");
-        return false;
-    }
-    // Sorting the vector of strings so it is alphabetically ordered
-    std::sort(file_names.begin(), file_names.end());
-
-    // Obtaining the 2010 data set    
-    for(i = 2; i<1380; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] ./Vision_MCR/2010/" + file_names.at(i) + "\n";
-        data[index_data] = getDescriptor("./Vision_MCR/2010/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2010/" + file_names.at(i)), 2010, index_data);
-        index_data++;
-    }
-
-    // Deleting the names of the set
-    file_names.erase(file_names.begin(), file_names.end());
-
-    return true;
+    return file_names;
 }
 
 void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int start_index, int finish_index){
@@ -335,7 +288,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
     float aux = 0;
     // Applying the K-means algorithm for each class_data
     for(int m=0; m<9; m++){
-        std::cout << "[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of the " + std::to_string(m + 1) + " class.\n";
+        std::cout << "\r" <<"[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of the " + std::to_string(m + 1) + " class.\n";
         kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER, 800, 0.0005), attempts, initial_centers, centers[m]);
         aux = centers[0].at<float>(0,0);
         aux = centers[1].at<float>(0,0);
@@ -383,16 +336,12 @@ bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
     std::ofstream file(path.c_str(), std::ios::out | std::ios::binary );
     if (!file)
         return false;
- 
-    //file.write((const char*) &matWidth, sizeof(matWidth));
-    //file.write((const char*) &matHeight, sizeof(matHeight));
 
     int j, k, m, n = 0;
     for(j=0; j<9; j++){
         for(k=0; k<15; k++){
             for(m=0; m<24; m++){
                 file.write((const char*) &dictionary.at<float>(n,m), sizeof(dictionary.at<float>(n,m)));
-                //dictionaryTextons.at<float>(n,m) = class_data[j].at<float>(k,m);
             }
             n++;
         }
@@ -422,47 +371,6 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
         }
     }
     std::cout << "Success loading of dictionary.bin" << std::endl;
-    return true;
-}
-
-bool getDataHistogram(struct img_dataHistogram* dataH, cv::Mat dictionary, int n_images){
-// Reading 2008 set
-    // Directory of the 2008 set
-    std::string directory = "./Vision_MCR/2008/";
-
-    // Creating a vector of strings to save the names of the images and txt
-    std::vector<std::string> file_names;
-
-    // Reading the folder for each element and save their names in file_names
-    DIR *dir;
-    struct dirent *ent;
-    int i=0;
-    int index_data = 0;
-
-    if ((dir = opendir ("./Vision_MCR/2008/")) != NULL) {
-        while ((ent = readdir (dir)) != NULL) {
-            file_names.push_back(std::string(ent->d_name));
-        }
-        closedir (dir);
-    } else {
-    // If the directory could not be opened
-        perror ("");
-        return false;
-    }
-    // Sorting the vector of strings so it is alphabetically ordered
-    std::sort(file_names.begin(), file_names.end());
-
-    // Obtaining the 2008 data set
-    std::cout << "Computing histograms of textons of data set 2008..."<< std::endl;    
-    for(i = 2; i<2*n_images+2; i=i+2){
-        std::cout << "[" + std::to_string(porcentage(index_data, n_images)) + '%' + "] Image: ./Vision_MCR/2008/" + file_names.at(i) + "\n";
-        dataH[index_data] = getHistogramDescriptor("./Vision_MCR/2008/" + file_names.at(i+1), getMaximumResponseFilter("./Vision_MCR/2008/" + file_names.at(i)), dictionary, 2008, index_data);
-        index_data++;
-    }
-
-    // Deleting the names of the set
-    file_names.erase(file_names.begin(), file_names.end());
-
     return true;
 }
 
@@ -633,7 +541,7 @@ void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints){
 
 // FUNCION PARA IMPRIMIR EN ARCHIVO EL SVM_PROBLEM
 void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
-   std::string filename = "coral_scale_2008";
+   std::string filename = "data-for-libsvm";
    int array[10];
 
    std::ofstream file(filename);
