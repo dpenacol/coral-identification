@@ -146,19 +146,19 @@ int main(int argc, char **argv){
     //getDictionaryTextons(dictionaryTextons, data, start_index, finish_index);
     //saveDictionaryTextons(dictionaryTextons, "dictionary.bin");
 
-    loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
+    //loadDictionaryTextons(dictionaryTextons, "dictionary.bin");
     //readTextonsMatlab(dictionaryTextons, "textonMapMATLAB.txt");
 
     // Obtaining the Textons Histograms from the data_set
     n_images = 1;
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
 
-    getDataHistogram(dataH, dictionaryTextons, n_images);
+    //getDataHistogram(dataH, dictionaryTextons, n_images);
     //printMAXHistogramTextons(dataH, 20);
     //saveDescriptorH(dataH, n_images);
     //dataH = loadDescriptorH(n_images);
     
-    saveSVMtxt(dataH, n_images);
+    //saveSVMtxt(dataH, n_images);
     // Creating the SVM structures
     /*
     struct svm_problem prob;
@@ -179,6 +179,7 @@ int main(int argc, char **argv){
     
     model = svm_train(&prob, &param);
     */
+    getConfusionMatrix(1);
     // Freeing space of the data struct
     delete [] data;
     delete [] dataH;
