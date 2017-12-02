@@ -241,7 +241,7 @@ int main(int argc, char **argv){
             if(valid_sets[k]){
                 std::cout <<"Set: "<<years[k]<<std::endl; 
                 for(j = 0; j<n_images; j++){
-                    std::cout << "[ " << porcentage(j,n_images) << " %]" << std::flush << "\r";
+                    std::cout << "[ " << porcentage(n,n_images) << " %]" << std::flush << "\r";
                     descriptorsH[n] = getHistogramDescriptor(file_names.at(j)+".txt", imgs_MR[j], dictionaryTextons, years[k], n);
                     n++;
                 }

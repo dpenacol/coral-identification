@@ -144,7 +144,7 @@ struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
         }
         fin.close();
     }else{
-        std::cout << "Error loading dataH_set.bin" << std::endl;
+        std::cout << "Error loading dataH"+ std::to_string(year) + ".bin" << std::endl;
     }
     return dataH;
 }
@@ -567,4 +567,188 @@ void saveSVMtxt(struct img_dataHistogram* dataH){
     } else{
         std::cout << "Error openning "  + filename << std::endl;
     } 
+}
+
+
+// FUNCION PARA IMPRIMIR EN ARCHIVO EL SVM_PROBLEM  DESDE DOS SETS DISTINTOS
+void saveSVMtxt2(struct img_dataHistogram* dataH_2008, struct img_dataHistogram* dataH_2009, int n_images){
+   std::string filename = "coral_svm_20082009";
+   int array[10];
+   std::ofstream file(filename);
+    if (file.is_open()){
+        int i, j, k;
+
+        for(i=0;i<10;i++)
+            array[i] =0;
+
+        for(k=0; k< n_images; k++){
+            for(i=0; i<dataH_2008[k].n_labels; i++){
+                if(dataH_2008[k].key_Point[i].type != 0){
+                    file << dataH_2008[k].key_Point[i].type;
+                    file << " ";
+                    array[dataH_2008[k].key_Point[i].type]++;// Para mostrar cuantos hay de cada clase (se puede borrar)
+                    for(j=0; j<540; j++){
+                        if(dataH_2008[k].key_Point[i].histogram[j] != 0.0){
+                            file << j << ":";
+                            file << dataH_2008[k].key_Point[i].histogram[j];
+                            file << " ";
+                        }
+                    }
+                    file << std::endl;
+                }
+            }
+        }
+
+        for(k=0; k< n_images; k++){
+            for(i=0; i<dataH_2009[k].n_labels; i++){
+                if(dataH_2009[k].key_Point[i].type != 0){
+                    file << dataH_2009[k].key_Point[i].type;
+                    file << " ";
+                    array[dataH_2009[k].key_Point[i].type]++;// Para mostrar cuantos hay de cada clase (se puede borrar)
+                    for(j=0; j<540; j++){
+                        if(dataH_2009[k].key_Point[i].histogram[j] != 0.0){
+                            file << j << ":";
+                            file << dataH_2009[k].key_Point[i].histogram[j];
+                            file << " ";
+                        }
+                    }
+                    file << std::endl;
+                }
+            }
+        }
+
+        file.close();
+    } else{
+        std::cout << "Error openning "  + filename << std::endl;
+    } 
+}
+
+void matrizC (int* predict, int* real, int total_k, float mat_conf[9][9], float mat_CvsNC[2][2], int totalRC[9]){
+		
+	for(int i=0;i<9; i++){ //inicializar arreglos y matriz
+		for(int j=0;j<9; j++){
+		mat_conf[i][j]=0;	
+		}
+		totalRC[i]=0;	
+	}
+		
+	//
+	//   1  | 2  | 3   4   5   6   7   8   9   <-- valores reales
+	//1| 00 | 01 
+	//2| 10 | 11
+	//3| 20 | 21
+	//4| 30 | 31
+	//5| 40 | .
+	//6| 50 | .
+	//7| 60 | .
+	//8| 70 |
+	//9| 80 |
+	//
+    float full = 0;
+	for(int i=0;i<total_k; i++){
+	   totalRC[real[i]-1]++;  //cuenta la cantidad de etiquetas reales de cada clase
+       mat_conf[real[i]-1][predict[i]-1]++;
+       if(real[i]==predict[i]) full++;
+	}
+	full/=total_k;
+	//Coral: Acrop Pavon Monti Pocill Porit
+	//No coral: CCA Turf Macro  Sand
+    float CNC = 0;
+	int CvsNC[2]={0,0};
+	CvsNC[0]= totalRC[0]+totalRC[1]+totalRC[2]+totalRC[3];
+	CvsNC[1]= totalRC[4]+totalRC[5]+totalRC[6]+totalRC[7]+totalRC[8];
+	for(int i=0;i<4; i++){//No corales clasificados como no corales  :)
+		for(int j=0;j<4; j++){
+			mat_CvsNC[0][0]+=mat_conf[i][j];
+		}	
+	}
+    CNC = mat_CvsNC[0][0];
+	mat_CvsNC[0][0]/=CvsNC[0];
+	for(int i=4;i<9; i++){//No corales clasificados como corales   :(
+		for(int j=0;j<4; j++){
+			mat_CvsNC[1][0]+=mat_conf[i][j];
+		}	
+	}
+	mat_CvsNC[1][0]/=CvsNC[1];
+	for(int i=0;i<4; i++){//Corales clasificados como no corales   :(
+		for(int j=4;j<9; j++){
+			mat_CvsNC[0][1]+=mat_conf[i][j];
+		}	
+	}
+	mat_CvsNC[0][1]/=CvsNC[0];
+	for(int i=4;i<9; i++){//Corales clasificados como corales      :)
+		for(int j=4;j<9; j++){
+			mat_CvsNC[1][1]+=mat_conf[i][j];
+		}	
+	}
+    CNC+=mat_CvsNC[1][1];
+	mat_CvsNC[1][1]/=CvsNC[1];
+	
+    CNC/=(CvsNC[0]+CvsNC[1]);
+    std::cout << "Full: " << full*100 << '%' << std::endl;
+    std::cout << "Coral, non-coral: " << CNC*100 << '%' << std::endl;
+	for(int i=0;i<9; i++){
+		for(int j=0;j<9; j++){
+			mat_conf[j][i]/=totalRC[j];		
+		}	
+	}
+			
+}
+
+int* fileToArray(std::string fileName, int* total_k){
+		*total_k=0;
+		int* array;
+		std::vector<int> aux_array;
+		int i=0;
+		std::ifstream file(fileName);
+    	if (file.is_open()){
+        	std::string str;
+        	
+        	while(!file.eof()){        
+            	file >> str;
+				aux_array.push_back(atoi(str.c_str()));
+				std::getline(file,str);
+				(*total_k)++;
+				//std::cout<< *total_k << std::endl;
+        	}
+        	file.close();
+		} else{
+			std::cout << "Error loading "  + fileName << std::endl;
+		}
+		array = new int[aux_array.size()];
+		for(int i=0; i<aux_array.size();i++){
+			array[i] = aux_array.at(i);
+		}
+	return array;
+}
+	
+	
+void getConfusionMatrix(int test_n){
+	int* predict;
+	int* real;
+	float mat_CvsNC[2][2]={{0,0},{0,0}};
+	float mat_conf[9][9];
+	int total_k=0;
+    int totalRC[9];
+	int* ptr = &total_k;
+    std::string fileName;
+
+    fileName = "./Results/Test" + std::to_string(test_n) + "/";
+
+	predict = fileToArray(fileName + "predict", ptr);
+	real = fileToArray(fileName + "real",&total_k);
+	//int total_k = (sizeof real / sizeof real[0]);
+    std::cout << std::endl << "Results of Test " << test_n << ":" << std::endl;
+	matrizC(predict,real, total_k,mat_conf,mat_CvsNC, totalRC);
+	std::string str[] = {"CCA   ", "Turf  ", "Macro ","Sand  ", "Acrop ","Pavon ","Monti ","Pocill","Porit "};
+	std::cout<<std::endl<<"CONFUSION MATRIX"<<std::endl<<"         CCA    Turf   Macro  Sand   Acrop  Pavon  Monti  Pocill Porit"<<std::endl;
+	for(int i=0;i<9; i++){
+		std::cout<<str[i]<<"  |";
+		for(int j=0;j<9; j++){
+				std::cout<<std::fixed<<std::setprecision(2) <<mat_conf[i][j]<<"   ";
+		}
+        std::cout<<std::fixed<<std::setprecision(2) <<totalRC[i]<<"   ";
+		std::cout<<std::endl;
+	}
+    return;	
 }

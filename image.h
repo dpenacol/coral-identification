@@ -21,6 +21,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <stdlib.h> 
+#include <iomanip>
+#include <vector>
+template <typename T,unsigned S>
+inline unsigned arraysize(const T (&v)[S]) { return S; }
 
 
 struct keyPoint{
@@ -109,6 +114,13 @@ void readTextonsMatlab(cv::Mat dictionary, std::string filename);
 
 void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints);
 
-void saveSVMtxt(struct img_dataHistogram* dataH);
+void saveSVMtxt(struct img_dataHistogram* dataH, int n_images);
+void saveSVMtxt2(struct img_dataHistogram* dataH_2008, struct img_dataHistogram* dataH_2009, int n_images);
 
-#endif
+void matrizC (int* predict, int* real, int total_k, float mat_conf[9][9], float mat_CvsNC[2][2], int totalRC[9]);
+
+int* fileToArray(std::string fileName, int* total_k);
+
+void getConfusionMatrix(int test_n);
+
+#endif 
