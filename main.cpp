@@ -151,7 +151,8 @@ int main(int argc, char **argv){
 
     // Obtaining the Textons Histograms from the data_set
     n_images = 1;
-    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+    struct img_dataHistogram* dataH2008 = new struct img_dataHistogram[671];
+    struct img_dataHistogram* dataH2009 = new struct img_dataHistogram[695];
 
     //getDataHistogram(dataH, dictionaryTextons, n_images);
     //printMAXHistogramTextons(dataH, 20);
@@ -179,9 +180,10 @@ int main(int argc, char **argv){
     
     model = svm_train(&prob, &param);
     */
-    getConfusionMatrix(1);
+    //getConfusionMatrix(2);
     // Freeing space of the data struct
     delete [] data;
-    delete [] dataH;
+    delete [] dataH2008;
+    delete [] dataH2009;
     return 0;
 }

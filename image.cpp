@@ -668,6 +668,60 @@ void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
     } 
 }
 
+
+// FUNCION PARA IMPRIMIR EN ARCHIVO EL SVM_PROBLEM  DESDE DOS SETS DISTINTOS
+void saveSVMtxt2(struct img_dataHistogram* dataH_2008, struct img_dataHistogram* dataH_2009, int n_images){
+   std::string filename = "coral_svm_20082009";
+   int array[10];
+   std::ofstream file(filename);
+    if (file.is_open()){
+        int i, j, k;
+
+        for(i=0;i<10;i++)
+            array[i] =0;
+
+        for(k=0; k< n_images/2+20; k++){
+            for(i=0; i<dataH_2008[k].n_labels; i++){
+                if(dataH_2008[k].key_Point[i].type != 0){
+                    file << dataH_2008[k].key_Point[i].type;
+                    file << " ";
+                    array[dataH_2008[k].key_Point[i].type]++;// Para mostrar cuantos hay de cada clase (se puede borrar)
+                    for(j=0; j<540; j++){
+                        if(dataH_2008[k].key_Point[i].histogram[j] != 0.0){
+                            file << j << ":";
+                            file << dataH_2008[k].key_Point[i].histogram[j];
+                            file << " ";
+                        }
+                    }
+                    file << std::endl;
+                }
+            }
+        }
+
+        for(k=0; k< n_images/2; k++){
+            for(i=0; i<dataH_2009[k].n_labels; i++){
+                if(dataH_2009[k].key_Point[i].type != 0){
+                    file << dataH_2009[k].key_Point[i].type;
+                    file << " ";
+                    array[dataH_2009[k].key_Point[i].type]++;// Para mostrar cuantos hay de cada clase (se puede borrar)
+                    for(j=0; j<540; j++){
+                        if(dataH_2009[k].key_Point[i].histogram[j] != 0.0){
+                            file << j << ":";
+                            file << dataH_2009[k].key_Point[i].histogram[j];
+                            file << " ";
+                        }
+                    }
+                    file << std::endl;
+                }
+            }
+        }
+
+        file.close();
+    } else{
+        std::cout << "Error openning "  + filename << std::endl;
+    } 
+}
+
 void matrizC (int* predict, int* real, int total_k, float mat_conf[9][9], float mat_CvsNC[2][2], int totalRC[9]){
 		
 	for(int i=0;i<9; i++){ //inicializar arreglos y matriz
@@ -689,11 +743,13 @@ void matrizC (int* predict, int* real, int total_k, float mat_conf[9][9], float 
 	//8| 70 |
 	//9| 80 |
 	//
+    float full = 0;
 	for(int i=0;i<total_k; i++){
 	   totalRC[real[i]-1]++;  //cuenta la cantidad de etiquetas reales de cada clase
-       mat_conf[real[i]-1][predict[i]-1]++; 
+       mat_conf[real[i]-1][predict[i]-1]++;
+       if(real[i]==predict[i]) full++;
 	}
-		
+	full/=total_k;
 	//Coral: Acrop Pavon Monti Pocill Porit
 	//No coral: CCA Turf Macro  Sand
     float CNC = 0;
@@ -728,7 +784,8 @@ void matrizC (int* predict, int* real, int total_k, float mat_conf[9][9], float 
 	mat_CvsNC[1][1]/=CvsNC[1];
 	
     CNC/=(CvsNC[0]+CvsNC[1]);
-    std::cout << "Coral, non-coral: " << CNC << std::endl;
+    std::cout << "Full: " << full*100 << '%' << std::endl;
+    std::cout << "Coral, non-coral: " << CNC*100 << '%' << std::endl;
 	for(int i=0;i<9; i++){
 		for(int j=0;j<9; j++){
 			mat_conf[j][i]/=totalRC[j];		
