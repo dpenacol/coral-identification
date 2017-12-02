@@ -125,14 +125,19 @@ struct img_data* loadDescriptor(int n_images){
     return data;
 }
 
-struct img_dataHistogram* loadDescriptorH(int n_images){
+struct img_dataHistogram* loadDescriptorH(int year, int n_images){
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
     std::ifstream fin;
-    fin.open("dataH_set.bin", std::ios::in| std::ios::binary);
+    if(year==2008){
+        fin.open("dataH_set2008.bin", std::ios::in| std::ios::binary);}
+    if(year==2009){
+        fin.open("dataH_set2009.bin", std::ios::in| std::ios::binary);}
+    if(year==2010){
+        fin.open("dataH_set2010.bin", std::ios::in| std::ios::binary);}
     int i, j;
     int k;
     if(fin.is_open()){
-        std::cout << "Loading dataH_set.bin..." << std::endl;
+        std::cout << "Loading dataH"+ std::to_string(year) + ".bin..." << std::endl;
 
         for(i = 0; i < n_images; i++){
             fin.read((char *)&dataH[i], sizeof(struct img_dataHistogram));
@@ -143,10 +148,10 @@ struct img_dataHistogram* loadDescriptorH(int n_images){
                 }
             }
         }
-        std::cout << "Success loading of dataH_set.bin" << std::endl;
+        std::cout << "Success loading of dataH"+ std::to_string(year) + ".bin" << std::endl;
         fin.close();
     }else{
-        std::cout << "Error loading dataH_set.bin" << std::endl;
+        std::cout << "Error loading dataH"+ std::to_string(year) + ".bin" << std::endl;
     }
     return dataH;
 }
@@ -680,7 +685,7 @@ void saveSVMtxt2(struct img_dataHistogram* dataH_2008, struct img_dataHistogram*
         for(i=0;i<10;i++)
             array[i] =0;
 
-        for(k=0; k< n_images/2+20; k++){
+        for(k=0; k< n_images; k++){
             for(i=0; i<dataH_2008[k].n_labels; i++){
                 if(dataH_2008[k].key_Point[i].type != 0){
                     file << dataH_2008[k].key_Point[i].type;
@@ -698,7 +703,7 @@ void saveSVMtxt2(struct img_dataHistogram* dataH_2008, struct img_dataHistogram*
             }
         }
 
-        for(k=0; k< n_images/2; k++){
+        for(k=0; k< n_images; k++){
             for(i=0; i<dataH_2009[k].n_labels; i++){
                 if(dataH_2009[k].key_Point[i].type != 0){
                     file << dataH_2009[k].key_Point[i].type;
