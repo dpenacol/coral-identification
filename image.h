@@ -72,7 +72,7 @@ void saveDescriptorH(struct img_dataHistogram* data, int n_images, std::string f
 
 bool saveDictionaryTextons(cv::Mat dictionary, std::string path);
 
-struct img_data* loadDescriptor(int n_images, std::string filename);
+struct img_data* loadDescriptor(std::string filename);
 // Load the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from a binary file.
 
@@ -114,7 +114,7 @@ void readTextonsMatlab(cv::Mat dictionary, std::string filename);
 
 void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints);
 
-void saveSVMtxt(struct img_dataHistogram* dataH, int n_images);
+void saveSVMtxt(struct img_dataHistogram* dataH);
 void saveSVMtxt2(struct img_dataHistogram* dataH_2008, struct img_dataHistogram* dataH_2009, int n_images);
 
 void matrizC (int* predict, int* real, int total_k, float mat_conf[9][9], float mat_CvsNC[2][2], int totalRC[9]);

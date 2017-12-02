@@ -72,6 +72,7 @@ void saveDescriptor(struct img_data* data, int n_images, std::string filename){
     fout.open(filename.c_str(),std::ios::out| std::ios::binary);
     int i, j;
     int k;
+    fout.write((char *)&n_imagen,sizeof(int);
     for(i = 0; i < n_images; i++){
         fout.write((char *)&data[i], sizeof(struct img_data));
         for(j=0; j<data[i].n_labels; j++){
@@ -89,6 +90,7 @@ void saveDescriptorH(struct img_dataHistogram* dataH, int n_images, std::string 
     fout.open(filename.c_str(),std::ios::out| std::ios::binary);
     int i, j;
     int k;
+    fout.write((char *)&n_imagen,sizeof(int);
     for(i = 0; i < n_images; i++){
         fout.write((char *)&dataH[i], sizeof(struct img_dataHistogram));
         for(j=0; j<dataH[i].n_labels; j++){
@@ -101,10 +103,12 @@ void saveDescriptorH(struct img_dataHistogram* dataH, int n_images, std::string 
     fout.close();
 }
 
-struct img_data* loadDescriptor(int n_images, std::string filename){
-    struct img_data* data = new struct img_data[n_images];
+struct img_data* loadDescriptor(std::string filename){
+    int n_images;
     std::ifstream fin;
     fin.open(filename.c_str(), std::ios::in| std::ios::binary);
+    fin.read((char *)&n_imagen, sizeof(int));
+    struct img_data* data = new struct img_data[n_images];
     int i, j;
     int k;
     if(fin.is_open()){
@@ -125,10 +129,12 @@ struct img_data* loadDescriptor(int n_images, std::string filename){
     return data;
 }
 
-struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
-    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
+struct img_dataHistogram* loadDescriptorH(std::string filename){
+    int n_images;
     std::ifstream fin;
     fin.open(filename.c_str(), std::ios::in| std::ios::binary);
+    fin.read((char *)&n_images, sizeof(int));
+    struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
     int i, j;
     int k;
     if(fin.is_open()){
@@ -144,7 +150,7 @@ struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
         }
         fin.close();
     }else{
-        std::cout << "Error loading dataH"+ std::to_string(year) + ".bin" << std::endl;
+        std::cout << "Error loading dataH"+ filename  << std::endl;
     }
     return dataH;
 }

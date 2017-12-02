@@ -201,31 +201,33 @@ int main(int argc, char **argv){
         // Deleting the names of the set
         file_names.erase(file_names.begin(), file_names.end());
     }
-    cv::Mat dictionaryTextons(135, 24, CV_32FC1);
+    
     if(dictionary){
+        cv::Mat dictionaryTextons(135, 24, CV_32FC1);
         if(load){
             // Load the image data from a binary file
             std::cout << "Loading descriptor: "<< "\""<< args::get(load) << "\"" << std::endl;
             descriptors = loadDescriptor(n_images, args::get(load));
         }
+        start_index =0;
+        finish_index =n_images;
         // Obtaining the textons from a group of images of the data
         std::cout << "Calculating the texture elements "<<  std::endl;
         getDictionaryTextons(dictionaryTextons, descriptors, start_index, finish_index);
         
         // Save the Maximum Response Filter information in a binary file
-        if(save && dictionary){
-            
+        if(save){
             saveDictionaryTextons(dictionaryTextons, args::get(save));  
             std::cout << "saved Dictionary in  "<<  args::get(save) << std::endl;
         }
-        else if(!save && dictionary){
+        else if(!save){
             saveDictionaryTextons(dictionaryTextons, "dictionary.bin");  
             std::cout << "saved Dictionary in  "<<  "dictionary.bin" << std::endl;
         }
     }
     if(histogram){
+        cv::Mat dictionaryTextons(135, 24, CV_32FC1);
         descriptorsH = new struct img_dataHistogram[n_images];
-
         if(load){
             // Load the image data from a binary file
             loadDictionaryTextons(dictionaryTextons, args::get(load));
