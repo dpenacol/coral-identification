@@ -69,8 +69,8 @@ void readTextonsMatlab(cv::Mat dictionary, std::string filename){
 void saveDescriptor(struct img_data* data, int n_images, std::string filename){
     std::ofstream fout;
     fout.open(filename.c_str(),std::ios::out| std::ios::binary);
-    int i, j;
-    int k;
+    int i, j, k;
+
     for(i = 0; i < n_images; i++){
         fout.write((char *)&data[i], sizeof(struct img_data));
         for(j=0; j<data[i].n_labels; j++){
@@ -86,11 +86,12 @@ void saveDescriptor(struct img_data* data, int n_images, std::string filename){
 void saveDescriptorH(struct img_dataHistogram* dataH, int n_images, std::string filename){
     std::ofstream fout;
     fout.open(filename.c_str(),std::ios::out| std::ios::binary);
-    int i, j;
-    int k;
+    int i, j, k;
+
     for(i = 0; i < n_images; i++){
         fout.write((char *)&dataH[i], sizeof(struct img_dataHistogram));
         for(j=0; j<dataH[i].n_labels; j++){
+            
             fout.write((char *)&dataH[i].key_Point[j], sizeof(struct keyPointHistogram));
             for(k=0; k<540; k++){
                 fout.write((char *)&dataH[i].key_Point[j].histogram[k], sizeof(dataH[i].key_Point[j].histogram[k]));
@@ -125,15 +126,19 @@ struct img_data* loadDescriptor(int n_images, std::string filename){
 }
 
 struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
+    if(n_images == 0){
+        n_images = 2055;
+    }
+    std::cout <<n_images << std::endl;
     struct img_dataHistogram* dataH = new struct img_dataHistogram[n_images];
     std::ifstream fin;
     fin.open(filename.c_str(), std::ios::in| std::ios::binary);
-    int i, j;
-    int k;
+    int i=0, j, k;
+
     if(fin.is_open()){
-       
         for(i = 0; i < n_images; i++){
-            fin.read((char *)&dataH[i], sizeof(struct img_dataHistogram));
+            if(!fin.read((char *)&dataH[i], sizeof(struct img_dataHistogram)))
+                break;
             for(j=0; j<dataH[i].n_labels; j++){
                 fin.read((char *)&dataH[i].key_Point[j], sizeof(struct keyPointHistogram));
                 for(k=0; k<540; k++){
@@ -142,6 +147,12 @@ struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
             }
         }
         fin.close();
+        struct img_dataHistogram* auxH = new struct img_dataHistogram[i];
+        for(k=0;k<i; k++){
+            auxH[k] = dataH[k];
+        }
+        delete [] dataH;
+        return auxH;
     }else{
         std::cout << "Error loading dataH"+ filename + ".bin" << std::endl;
     }
@@ -190,7 +201,6 @@ int porcentage(int index_data, int n_images){
 }
 
 std::vector<std::string> getFileNames( bool* valid_sets, int* n_imgs){
-
     // Directories of the 2008, 2009 and 2010 sets
     std::string directories[3] = {"./Vision_MCR/2008/", "./Vision_MCR/2009/", "./Vision_MCR/2010/"};
     
@@ -234,7 +244,6 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
     // Parameters of K-means algorithm
     int clusters = 15;
     int initial_centers = cv::KMEANS_PP_CENTERS;
-
     int iterations = km.iterations;
     int attempts = km.attempts;
     double epsilon = km.epsilon;
@@ -286,9 +295,10 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
 
     // Applying the K-means algorithm for each class_data
     for(int m=0; m<9; m++){
-        std::cout << "\r" <<"[ " <<green<<porcentage(m, 8)<<reset<<" %] Obtaining textons of the " << m + 1 << " class.\n";//800, 0.0005
+        std::cout << "\r" <<"[ " <<green<<porcentage(m, 8)<<reset<<" %] Obtaining textons of the " << m + 1 << " class."<<std::flush<<"\r";//800, 0.0005
         kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, iterations, epsilon), attempts, initial_centers, centers[m]);
     }
+    std::cout << "\r" <<"[" <<green<<100<<reset<<" %] " <<green+"OK"+reset<<std::endl;
 
     // Saving the 135 textons on the dictionary
     n = 0;
@@ -308,6 +318,7 @@ int getNearestTexton(cv::Mat dictionaryTextons, float r24[24]){
     float euclidean = 0;
     int i, j;
 
+    // Calculate the minimun euclidean distance for all the textons in the dicionary
     for(i=0; i<135; i++){
         for(j=0; j<24; j++){
             euclidean = euclidean + pow(r24[j] - dictionaryTextons.at<float>(i,j), 2);
@@ -330,7 +341,7 @@ bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
     std::ofstream file(path.c_str(), std::ios::out | std::ios::binary );
     if (!file)
         return false;
-
+    // Write the dictionary in the binary file
     int j, k, m, n = 0;
     for(j=0; j<9; j++){
         for(k=0; k<15; k++){
@@ -354,6 +365,7 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
     }
     std::cout << "Loading dictionary from binary file... " << std::endl;
     int j, k, m, n = 0;
+    // Reading the dictionary of textons from the binary file
     for(j=0; j<9; j++){
         for(k=0; k<15; k++){
             for(m=0; m<24; m++){
@@ -376,6 +388,7 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
     dataH.index = 0;
     dataH.year = 0;
 
+    // Modify the number of labeled points for each set
     if(year == 2008 || year == 2009){
         dataH.n_labels = 200;
     }
@@ -394,7 +407,7 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             img_Texton.at<int>(i, j) = getNearestTexton(dictionary, r24);
         }
     }
-
+    // Read the coordinates and label data from each txt image data
     if (file.is_open()){
         std::string str;
         std::getline(file,str);
@@ -408,6 +421,7 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             file >> str;
             dataH.key_Point[i].type = str2label(str);
         }
+        // Save the histogram descriptor in img_DataHistogram structure
         for(i=0; i< dataH.n_labels ; i++){
             if(dataH.key_Point[i].type != 0){
                 getPatchs(img_Texton, dictionary, &dataH.key_Point[i]);
@@ -422,21 +436,9 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
     return dataH;
 }
 
-int checkPatchCompatibility(struct img_data* data, int n_images, int max_patch){
-    int n_overflows = 0;
-    for(int i=0; i<n_images; i++){
-        for(int j=0; j<data[i].n_labels; j++){
-            if(data[i].key_Point[j].pt.x - ((max_patch-1)/2) < 0 || data[i].key_Point[j].pt.y - ((max_patch-1)/2) < 0 )
-                n_overflows++;
-        }
-    }
-    return n_overflows;
-}
-
 void getPatchs(cv::Mat img_Texton, cv::Mat dictionary, struct keyPointHistogram* key_Point){
 
     cv::Mat p221(221, 221, CV_32FC1, cv::Scalar(0));
-
     int histograms[4][135];
     int x = 0, y = 0;
     int i, j;
@@ -516,39 +518,20 @@ void normalizeHistogramsTextons(int histograms[][135] , float histogram[540]){
     }
 }
 
-void printMAXHistogramTextons(struct img_dataHistogram* dataH, int n_keypoints){
-    for(int k=0; k<n_keypoints;k++){
-        std::cout << "Key point: " << k << std::endl;
-        for(int j=0; j<4;j++){
-            for(int i=135*j; i<135*(j+1); i++){
-                if(dataH->key_Point[k].histogram[i]==1){
-                    std::cout << "Patch"<< j <<": " <<(i-135*j)/15+1 << std::endl;
-                }
-            }
-        }
-        std::cout << "Correct class: " << dataH->key_Point[k].type << std::endl;
-        std::cout << "----------------------" << std::endl;
-    }
-}
+void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
+    std::string filename = "data-for-libsvm";
+    int i, j, k;
+    std::ofstream file(filename);
+    if(n_images == 0)
+        n_images = sizeof(dataH)/sizeof(struct img_dataHistogram*);
 
-// FUNCION PARA IMPRIMIR EN ARCHIVO EL SVM_PROBLEM
-void saveSVMtxt(struct img_dataHistogram* dataH){
-   std::string filename = "data-for-libsvm";
-   int array[10];
-
-   std::ofstream file(filename);
+    // write the histogram descriptor in a file to use with libsvm library
     if (file.is_open()){
-        int i, j, k;
-
-        for(i=0;i<10;i++)
-            array[i] =0;
-        int n_images = sizeof(dataH)/sizeof(dataH[0]);
         for(k=0; k< n_images; k++){
-            for(i=0; i<200; i++){
+            for(i=0; i<dataH[k].n_labels; i++){
                 if(dataH[k].key_Point[i].type != 0){
                     file << dataH[k].key_Point[i].type;
                     file << " ";
-                    array[dataH[k].key_Point[i].type]++;// Para mostrar cuantos hay de cada clase (se puede borrar)
                     for(j=0; j<540; j++){
                         if(dataH[k].key_Point[i].histogram[j] != 0.0){
                             file << j << ":";
@@ -559,9 +542,9 @@ void saveSVMtxt(struct img_dataHistogram* dataH){
                     file << std::endl;
                 }
             }
+            std::cout << "[ " <<green<<porcentage(k,n_images)<<reset<< " %]" << std::flush << "\r";
         }
-        for(i=0;i<10;i++)
-            std::cout << "items for class "<<i<<": "<<array[i] << std::endl;
+        std::cout << "["+green+"100"+reset+" %] "+green+"OK"+reset << std::flush << std::endl;
         file.close();
     } else{
         std::cout << "Error openning "  + filename << std::endl;
