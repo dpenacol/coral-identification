@@ -33,6 +33,12 @@ int main(int argc, char **argv){
     std::string loadfile, savefile;
     std::vector<std::string> file_names;
 
+    struct svm_problem prob;
+    struct svm_parameter param;
+    struct svm_model *model;
+    struct svm_grid grid_params;
+    const char *error_msg;
+
     try{
         parser.ParseCLI(argc, argv);
         std::cout << std::endl;
@@ -141,7 +147,7 @@ int main(int argc, char **argv){
             std::cout <<"[ " << green<<porcentage(j, n_images)<<reset<<" %]"<<std::flush<<"\r";
             imgs_MR[j] = getMaximumResponseFilter(file_names.at(j));
         }
-        std::cout << "[ " << green+"100"+reset<< " %]"<<green<<" OK"<<reset<< std::endl;
+        std::cout << "[" << green+"100"+reset<< " %]"<<green<<" OK"<<reset<< std::endl;
     }
 
     // If is necesarry to calculate the texture descriptors
@@ -157,8 +163,7 @@ int main(int argc, char **argv){
                 std::cout <<"Set: " << years[k]<< std::endl;
                 for(j=0; j<n_imgs[k] ; j++){
                     std::cout <<"[ " << green<<porcentage(n+1, n_imgs[k])<<reset << " %] "<<std::flush<<"\r";
-                    descriptors[n] = getDescriptor(file_names.at(n)+".txt", imgs_MR[n], years[k],n);
-                    n++;
+                    descriptors[n++] = getDescriptor(file_names.at(n)+".txt", imgs_MR[n], years[k],n);
                 }
                 std::cout<<green<<" OK"<<reset<<std::endl;
             }
@@ -223,12 +228,11 @@ int main(int argc, char **argv){
         for(k=0; k<3; k++){
             if(valid_sets[k]){
                 std::cout <<"Set: "<<years[k]<<std::endl; 
-                for(j = 0; j<n_images; j++){
-                    std::cout << "[ " <<green<<porcentage(n,n_images)<<reset<< " %]" << std::flush << "\r";
-                    descriptorsH[n] = getHistogramDescriptor(file_names.at(j)+".txt", imgs_MR[j], dictionaryTextons, years[k], n);
-                    n++;
+                for(j = 0; j<n_imgs[k]; j++){
+                    std::cout << "[ " <<green<<porcentage(j,n_imgs[k])<<reset<< " %]" << std::flush << "\r";
+                    descriptorsH[n++] = getHistogramDescriptor(file_names.at(n)+".txt", imgs_MR[n], dictionaryTextons, years[k], n);
                 }
-                std::cout << "[ "+green+"100"+reset+" %] "+green+"OK"+reset << std::flush << std::endl;
+                std::cout << "["+green+"100"+reset+" %] "+green+"OK"+reset << std::flush << std::endl;
             }
         }
 
@@ -243,7 +247,10 @@ int main(int argc, char **argv){
         std::cout << "Saved histogram descriptor in  "<<  savefile << std::endl;  
     }
     // If --problem command is set. Create a txt file with the structure format to work with libsvm
-    if(externalsvm){
+    if(tolibsvm){
+        std::cout << "Loaded "+args::get(tolibsvm)<<" to convert into libSVM file format" << std::endl;  
+        
+        /*
         loadfile = args::get(externalsvm); 
         // Get the data from a binary file. 
         std::cout << "Obtaining the structure problem file from: "<<  loadfile << std::endl;
@@ -251,46 +258,40 @@ int main(int argc, char **argv){
         
         // Saving in libSVM structure
         saveSVMtxt(descriptorsH);
-    }
-    /*if(prob){
-        
-        //CODIGO PARA OBTENER EL SVM-PROBLEM
-        
+        */
     }
     if(grid){
-        
-       // CODIGO PARA OBTENER EL MEJOR C Y GAMMA
-        
-    }
-    if(model){
-        
-        //CODIGO PARA OBTENER EL ARCHIVO.MODEL (ENTRENAR SVM)
-        
-    }
-    if(test){
-        
-        // PARA SELECCIONAR EL ARCHIVO A PROBAR
-        
-    }*/
-    /*
-    struct svm_problem prob;
-    struct svm_parameter param;
-    struct svm_model *model;
-    const char *error_msg;
 
-    getProblemSVM(&prob, descriptorsH, 100, 0, 0);
-    //bestParametersSVM(prob, param);
-    
-    getParamSVM(&param, exp2(-1), exp2(-2));
+        // Get the recived parameters for -n flag
+        grid_params.min  = std::get<0>(args::get(grid));
+        grid_params.max  = std::get<1>(args::get(grid));
+        grid_params.step = std::get<2>(args::get(grid));
+        grid_params.best_c =0;
+        grid_params.best_g =0;
+        std::cout << "Grid Search Grid(C,G) = { "<< grid_params.min<<grid_params.max <<grid_params.step <<" }"<< std::endl;
+        /*
+        bestParametersSVM(prob, param, grid_params);
+        */
+    }
+    if(train){
+        std::cout << "Trainin "+args::get(train)<< std::endl;
+        std::cout << "Created SVM.model file"<< std::endl;
+        /*
+        getParamSVM(&param, exp2(grid_params.best_c), exp2(grid_params.best_g));
+        getProblemSVM(&prob, descriptorsH, n_imgs);
+        model = svm_train(&prob, &param); 
+        svm_save_model(args::get(train), model); 
+        */
+    }
+    if(predict){
+        std::cout << "PREDICT COMMAND :"+args::get(predict)<< std::endl;
+        /*
+        model = svm_load_model(args::get(predict));
+        */
+        // FALTA hACER EL PREDICT
+        // svm_predict(model, );
+    }
 
-    error_msg = svm_check_parameter(&prob, &param);
-    if(error_msg){
-		fprintf(stderr,"ERROR: %s\n",error_msg);
-		exit(1);
-	}
-    
-    model = svm_train(&prob, &param);  
-    */
     // Freeing space for used arrays
     delete [] descriptors;
     delete [] descriptorsH;

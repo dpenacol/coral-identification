@@ -32,7 +32,7 @@ const std::string reset("\033[0m");
 struct kmeans_param{
     int attempts;
     int iterations;
-    int epsilon;
+    double epsilon;
 };
 
 struct keyPoint{

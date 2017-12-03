@@ -237,7 +237,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
 
     int iterations = km.iterations;
     int attempts = km.attempts;
-    int epsilon = km.epsilon;
+    double epsilon = km.epsilon;
 
     // Creating the structures for each class
     cv::Mat class_data[9];
@@ -340,7 +340,6 @@ bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
             n++;
         }
     }
-    std::cout << "Success saving"+path << std::endl;
     file.close();
 
     return true;
@@ -353,7 +352,7 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
         std::cout << "Error loading dictionary.bin..." << std::endl;
         return false;
     }
-    std::cout << "Loading dictionary.bin..." << std::endl;
+    std::cout << "Loading dictionary from binary file... " << std::endl;
     int j, k, m, n = 0;
     for(j=0; j<9; j++){
         for(k=0; k<15; k++){
@@ -364,7 +363,6 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
             n++;
         }
     }
-    std::cout << "Success loading of dictionary.bin" << std::endl;
     return true;
 }
 
