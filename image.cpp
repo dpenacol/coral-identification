@@ -407,7 +407,6 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             dataH.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str;
             dataH.key_Point[i].type = str2label(str);
-            std::cout << dataH.key_Point[i].type << std::endl;
         }
         for(i=0; i< dataH.n_labels ; i++){
             if(dataH.key_Point[i].type != 0){

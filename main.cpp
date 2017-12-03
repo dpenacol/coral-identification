@@ -78,7 +78,7 @@ int main(int argc, char **argv){
     //args::ValueFlag<std::string> test(svm, "file", "Specify the test data you want to predict.", {'d'});
 
     args::Positional<std::tuple<int, int, int> > year(parser, "YEARS", "years of set to work with (separate by commas)");
-    
+    //valid_sets[1]=true;
     try{
         parser.ParseCLI(argc, argv);
         std::cout << std::endl;
@@ -126,10 +126,10 @@ int main(int argc, char **argv){
         get_nimages.push_back(std::get<1>(args::get(n_img)));
         get_nimages.push_back(std::get<2>(args::get(n_img)));
         n=0;
-        if(dictionary){
+        if(dictionary && load){
             start_index = get_nimages.at(0);
             finish_index = get_nimages.at(1);
-            n_images = start_index - finish_index;
+            n_images = finish_index - start_index;
         }
         else{
             for(i=0;i<3;i++){
