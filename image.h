@@ -24,9 +24,16 @@
 #include <stdlib.h> 
 #include <iomanip>
 #include <vector>
-template <typename T,unsigned S>
-inline unsigned arraysize(const T (&v)[S]) { return S; }
+// Color for terminal output
+const std::string green("\033[1;32m");
+const std::string reset("\033[0m");
 
+// Global parameters of Kmeans Clustering
+struct kmeans_param{
+    int attempts;
+    int iterations;
+    int epsilon;
+};
 
 struct keyPoint{
     cv::Point pt;
@@ -80,7 +87,7 @@ struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename);
 
 bool loadDictionaryTextons(cv::Mat dictionary, std::string path);
 
-void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int start_index, int finish_index);
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int start_index, int finish_index, struct kmeans_param km);
 // Computes the K-means algorithm to each class creating a 
 // matrix with 135 textons each one with 24 values.
 
