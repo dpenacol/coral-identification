@@ -34,7 +34,6 @@ int main(int argc, char **argv){
     struct img_data* descriptors;
     struct img_dataHistogram* descriptorsH;
     cv::Mat* imgs_MR;
-
     const int years[3] = {2008, 2009, 2010};
     int n_imgs[] = {_nImg_2008,  _nImg_2009,  _nImg_2010};
     bool valid_sets[] = {false,false, false};
@@ -214,7 +213,7 @@ int main(int argc, char **argv){
         
         // Save the Maximum Response Filter information in a binary file
         if(save && dictionary){
-            
+
             saveDictionaryTextons(dictionaryTextons, args::get(save));  
             std::cout << "saved Dictionary in  "<<  args::get(save) << std::endl;
         }
@@ -259,7 +258,7 @@ int main(int argc, char **argv){
         saveDescriptorH(descriptorsH, n_images, savefile);
         std::cout << "Saved histogram descriptor in  "<<  savefile << std::endl;  
     }
-    
+
 
     if(externalsvm){
         loadfile = args::get(externalsvm); 
@@ -310,11 +309,11 @@ int main(int argc, char **argv){
 	}
     
     model = svm_train(&prob, &param);
-    
+  
 */
     // Freeing space for used arrays
     delete [] descriptors;
     delete [] descriptorsH;
-   // delete [] imgs_MR;
+    // delete [] imgs_MR;
     return 0;
 }

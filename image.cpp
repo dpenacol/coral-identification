@@ -144,7 +144,7 @@ struct img_dataHistogram* loadDescriptorH(int n_images, std::string filename){
         }
         fin.close();
     }else{
-        std::cout << "Error loading dataH"+ std::to_string(year) + ".bin" << std::endl;
+        std::cout << "Error loading dataH.bin" << std::endl;
     }
     return dataH;
 }
