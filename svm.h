@@ -19,6 +19,14 @@ extern "C" {
 
 extern int libsvm_version;
 
+struct svm_grid{
+	int min;
+	int max;
+	int step;
+	int best_c;
+	int best_g;
+};
+
 struct svm_node
 {
 	int index;
@@ -110,7 +118,7 @@ void svm_set_print_string_function(void (*print_func)(const char *));
 // Implementation
 void exit_input_error(int line_num);
 
-void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int n_img2008, int n_img2009, int n_img2010);
+void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int* n_imgs);
 // Converts specific textons histogram .txt data into
 // a structure suitable for the LIBSVM
 
@@ -119,7 +127,7 @@ void getParamSVM(struct svm_parameter* param, double C, double gamma);
 void svm_initialize_svm_problem(struct svm_problem* prob);
 // Initializes values of a svm_problem structure
 
-void bestParametersSVM(struct svm_problem prob, struct svm_parameter param);
+void bestParametersSVM(struct svm_problem prob, struct svm_parameter param, struct svm_grid grid);
 
 #ifdef __cplusplus
 }

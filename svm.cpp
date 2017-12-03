@@ -3192,7 +3192,7 @@ void svm_set_print_string_function(void (*print_func)(const char *))
 		svm_print_string = print_func;
 }
 
-void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int n_img2008, int n_img2009, int n_img2010){
+void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, int* n_imgs){
 	int set1 = 671;
 	int set2 = 695;
 	int set3 = 689;
@@ -3200,97 +3200,24 @@ void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, in
 	int row_x = 0;
 	int row_space = 0;
 	int n_data = 0;
+	int n=0;
 
-	if(n_img2008){
-		for(int i=0; i<n_img2008; i++){
-			for(int j=0; j<dataH[i].n_labels; j++){
-				if(dataH[i].key_Point[j].type!=0){
+	for(int k =0; k<3; k++){
+		for(int i=0; i<n_imgs[k]; i++){
+			for(int j=0; j<dataH[n].n_labels; j++){
+				if(dataH[n].key_Point[j].type!=0){
 					n_data++;
 				}
 			}
+			n++;
 		}
 	}
-	if(n_img2009){
-		for(int i=set1; i<n_img2009+set1; i++){
-			for(int j=0; j<dataH[i].n_labels; j++){
-				if(dataH[i].key_Point[j].type!=0){
-					n_data++;
-				}
-			}
-		}
-	}
-	if(n_img2010){
-		for(int i=set1+set2; i<n_img2010+set1+set2; i++){
-			for(int j=0; j<dataH[i].n_labels; j++){
-				if(dataH[i].key_Point[j].type!=0){
-					n_data++;
-				}
-			}
-		}
-	}
-
 	prob->l = n_data;
 	svm_node** x = Malloc(svm_node*, prob->l);
 
 	// Assigning dataH values to svm_problem structure
-	if(n_img2008){
-		for(int i=0; i<n_img2008; i++){
-			for(int j=0; j<dataH[i].n_labels; j++){
-				if(dataH[i].key_Point[j].type!=0){
-					for(int m=0; m<540; m++){
-						if(dataH[i].key_Point[j].histogram[m]!=0){
-							row_space++;
-						}
-					}
-					svm_node* x_space = Malloc(svm_node, row_space + 1);
-					row_space = 0;
-					for(int m=0; m<540; m++){
-						if(dataH[i].key_Point[j].histogram[m]!=0){
-							x_space[row_space].index = m+1;
-							x_space[row_space].value = (double)dataH[i].key_Point[j].histogram[m];
-							row_space++;
-						}
-					}
-					x_space[row_space].index = -1;
-					row_space = 0;
-
-					x[row_x] = x_space;
-					row_x++;				
-				}
-			}
-		}
-	}
-
-	if(n_img2009){
-		for(int i=set1; i<n_img2009+set1; i++){
-			for(int j=0; j<dataH[i].n_labels; j++){
-				if(dataH[i].key_Point[j].type!=0){
-					for(int m=0; m<540; m++){
-						if(dataH[i].key_Point[j].histogram[m]!=0){
-							row_space++;
-						}
-					}
-					svm_node* x_space = Malloc(svm_node, row_space + 1);
-					row_space = 0;
-					for(int m=0; m<540; m++){
-						if(dataH[i].key_Point[j].histogram[m]!=0){
-							x_space[row_space].index = m+1;
-							x_space[row_space].value = (double)dataH[i].key_Point[j].histogram[m];
-							row_space++;
-						}
-					}
-					x_space[row_space].index = -1;
-					row_space = 0;
-
-					x[row_x] = x_space;
-					row_x++;				
-				}
-			}
-		}
-	}
-
-	if(n_img2010){
-		for(int i=set1+set2; i<n_img2010+set1+set2; i++){
+	for(int k=0;k<3;k++){
+		for(int i=0; i<n_imgs[k]; i++){
 			for(int j=0; j<dataH[i].n_labels; j++){
 				if(dataH[i].key_Point[j].type!=0){
 					for(int m=0; m<540; m++){
@@ -3321,8 +3248,8 @@ void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, in
 	prob->y = Malloc(double, row_x);
 	row_x = 0;
 
-	if(n_img2008){
-		for(int i=0; i<n_img2008; i++){
+	for(int k=0; k<3;k++){
+		for(int i=0; i<n_imgs[k]; i++){
 			for(int j=0; j<dataH[i].n_labels; j++){
 				if(dataH[i].key_Point[j].type!=0){
 					prob->y[row_x] = dataH[i].key_Point[j].type;
@@ -3331,27 +3258,6 @@ void getProblemSVM(struct svm_problem* prob, struct img_dataHistogram* dataH, in
 			}
 		}
 	}
-	if(n_img2009){
-		for(int i=set1; i<n_img2009+set1; i++){
-			for(int j=0; j<dataH[i].n_labels; j++){
-				if(dataH[i].key_Point[j].type!=0){
-					prob->y[row_x] = dataH[i].key_Point[j].type;
-					row_x++;
-				}
-			}
-		}
-	}
-	if(n_img2010){
-		for(int i=set1+set2; i<n_img2010+set1+set2; i++){
-			for(int j=0; j<dataH[i].n_labels; j++){
-				if(dataH[i].key_Point[j].type!=0){
-					prob->y[row_x] = dataH[i].key_Point[j].type;
-					row_x++;
-				}
-			}
-		}
-	}
-
 }
 
 void getParamSVM(struct svm_parameter* param, double C, double gamma){
@@ -3375,18 +3281,17 @@ void getParamSVM(struct svm_parameter* param, double C, double gamma){
 
 }
 
-void bestParametersSVM(struct svm_problem prob, struct svm_parameter param){
+void bestParametersSVM(struct svm_problem prob, struct svm_parameter param, struct svm_grid* grid){
 	const char *error_msg;
 
 	int good_predicts = 0;
 	int percentage = 0;
 	int best_percentage = 0;
-	double best_C = 0, best_gamma = 0;
 	double C = 0, gamma = 0;
 	double *target = new double[prob.l];
 
-	for(int i=-5; i<6; i++){
-		for(int j=-5; j<6; j++){
+	for(int i=grid->min; i<grid->max; i+=grid->step){
+		for(int j=-grid->min; j<grid->max; j+=grid->step){
 			C = exp2(i);
 			gamma = exp2(j);
 			getParamSVM(&param, C, gamma);
@@ -3396,50 +3301,25 @@ void bestParametersSVM(struct svm_problem prob, struct svm_parameter param){
 				exit(1);
 			}
 
-			//model = svm_train(&prob, &param);
-			// double *target = Malloc(double, prob.l);  <--- Antes estaba asi, preferi cambiarlo a new que es de C++
-			// ademas lo defini al inicio de la funcion para evitar una alocacion de memoria en cada ciclo.
 			svm_cross_validation(&prob, &param, 4, target);
 
 			for(int i=0; i<prob.l; i++){
 				if(target[i] == prob.y[i])
 					good_predicts++;
-				target[i] = 0;// <- de una vez se inicializa para el ciclo que viene una vez de haya usado el valor
+				target[i] = 0;
 			}
-			// Tambien faltaba eliminar la memoria de target, se podia hacer con free(target) pero preferi
-			// cambiarloa a la version de C++ con delete.
-			// como lo puse afuera solo se elimina al final de todos los ciclos
-			// como estaba antes se estaba reservando un espacio nuevo de memoria en cada ciclo del tamaño
-			// del arreglo, ocupando mas RAM en cada iteración.
-			
 			percentage = 100*good_predicts/prob.l;
 			good_predicts = 0;
-			
-			// OTRO CAMBIO... creo que es asi, como estaba antes siempre asignaba 
-			// el ultimo C y gamma calculados al best_C y best_gamma. REVISAR igual
+
 			if(percentage > best_percentage){
 				best_percentage = percentage;
-				best_C = C;
-				best_gamma = gamma;
+				grid->best_c = C;
+				grid->best_g = gamma;
 			}
-			/*
-			// ASI ESYABA ANTES
-			if(i == -5 && j==-5){
-				best_percentage = percentage;
-				best_C = C;
-				best_gamma = gamma;
-			}else{
-				if(percentage > best_percentage){
-					best_percentage = percentage;
-					best_C = C;
-					best_gamma = gamma;
-				}
-			}
-			*/
 		}
 	}
 	delete [] target; // <-- Se libera el espacio de target.
-	std::cout << "Best C: " << best_C << " Best gamma: " << best_gamma << std::endl;
+	std::cout << "Best C: " << grid->best_c << " Best gamma: " << grid->best_c << std::endl;
 	std::cout << "Accuracy: " << best_percentage << std::endl;
 }
 

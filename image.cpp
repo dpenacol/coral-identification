@@ -9,7 +9,7 @@
 #include "image.h"
 #include "filters.h"
 #include "histogram.h"
-
+// Global parameters of Kmeans Clustering
 
 struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, int index){
     struct img_data data;
@@ -23,19 +23,18 @@ struct img_data getDescriptor(std::string fileName, cv::Mat img_MR, int year, in
     }
     std::ifstream file(fileName);
     if (file.is_open()){
-        int i=0, j=0;
+        int i, j;
         std::string str;
         std::getline(file,str);
         data.index = index;
         data.year = year;
-        while(!file.eof()){        
+        for(i=0; i<data.n_labels; i++){//while(!file.eof()){        
             file >> str;
             data.key_Point[i].pt.y = atoi(str.c_str())/2;
             file >> str; 
             data.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str;
             data.key_Point[i].type = str2label(str);
-            i++;
         }
         for(i=0; i< data.n_labels ; i++){
             for(j=0; j<24; j++){
@@ -231,11 +230,14 @@ std::vector<std::string> getFileNames( bool* valid_sets, int* n_imgs){
     return file_names;
 }
 
-void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int start_index, int finish_index){
+void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int start_index, int finish_index, struct kmeans_param km){
     // Parameters of K-means algorithm
     int clusters = 15;
-    int attempts = 100;
     int initial_centers = cv::KMEANS_PP_CENTERS;
+
+    int iterations = km.iterations;
+    int attempts = km.attempts;
+    double epsilon = km.epsilon;
 
     // Creating the structures for each class
     cv::Mat class_data[9];
@@ -264,7 +266,7 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
 
     // Initializing each class data matrix
     for(i=0; i<9; i++){
-        class_data[i] = cv::Mat(row[i],24,CV_32FC1);        
+        class_data[i] = cv::Mat(row[i],24,CV_32FC1, cv::Scalar(0));        
         row[i] = 0;
     }
 
@@ -284,8 +286,8 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
 
     // Applying the K-means algorithm for each class_data
     for(int m=0; m<9; m++){
-        std::cout << "\r" <<"[" + std::to_string(porcentage(m, 8)) + '%' + "] Obtaining textons of the " + std::to_string(m + 1) + " class.\n";
-        kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER, 2000, 0.0005), attempts, initial_centers, centers[m]);
+        std::cout << "\r" <<"[ " <<green<<porcentage(m, 8)<<reset<<" %] Obtaining textons of the " << m + 1 << " class.\n";//800, 0.0005
+        kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, iterations, epsilon), attempts, initial_centers, centers[m]);
     }
 
     // Saving the 135 textons on the dictionary
@@ -338,7 +340,6 @@ bool saveDictionaryTextons(cv::Mat dictionary, std::string path){
             n++;
         }
     }
-    std::cout << "Success saving dictionary.bin" << std::endl;
     file.close();
 
     return true;
@@ -351,7 +352,7 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
         std::cout << "Error loading dictionary.bin..." << std::endl;
         return false;
     }
-    std::cout << "Loading dictionary.bin..." << std::endl;
+    std::cout << "Loading dictionary from binary file... " << std::endl;
     int j, k, m, n = 0;
     for(j=0; j<9; j++){
         for(k=0; k<15; k++){
@@ -362,7 +363,6 @@ bool loadDictionaryTextons(cv::Mat dictionary, std::string path){
             n++;
         }
     }
-    std::cout << "Success loading of dictionary.bin" << std::endl;
     return true;
 }
 
@@ -407,7 +407,6 @@ struct img_dataHistogram getHistogramDescriptor(std::string fileName, cv::Mat im
             dataH.key_Point[i].pt.x = atoi(str.c_str())/2;
             file >> str;
             dataH.key_Point[i].type = str2label(str);
-            std::cout << dataH.key_Point[i].type << std::endl;
         }
         for(i=0; i< dataH.n_labels ; i++){
             if(dataH.key_Point[i].type != 0){
