@@ -93,6 +93,12 @@ int main(int argc, char **argv){
             start_index = get_nimages.at(0);
             finish_index = get_nimages.at(1);
             n_images = finish_index - start_index;
+            if(n_images < 200){
+                std::cout << "Not enought images to calculate a dictionary of textons " << std::endl;
+                std::cout << "Try with > 200 images" << std::endl<< std::endl;
+                std::cerr << parser;
+                return 1;
+            }
         }
         // For rest of commands must have #img,#img,#img format
         else{
@@ -162,10 +168,10 @@ int main(int argc, char **argv){
             if(valid_sets[k]){
                 std::cout <<"Set: " << years[k]<< std::endl;
                 for(j=0; j<n_imgs[k] ; j++){
-                    std::cout <<"[ " << green<<porcentage(n+1, n_imgs[k])<<reset << " %] "<<std::flush<<"\r";
+                    std::cout <<"[ " << green<<porcentage(j, n_imgs[k])<<reset << " %] "<<std::flush<<"\r";
                     descriptors[n++] = getDescriptor(file_names.at(n)+".txt", imgs_MR[n], years[k],n);
                 }
-                std::cout<<green<<" OK"<<reset<<std::endl;
+                std::cout << "["+green+"100"+reset+" %] "+green+"OK"+reset << std::flush << std::endl;
             }
         }
         std::cout <<std::endl;
