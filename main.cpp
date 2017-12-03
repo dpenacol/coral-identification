@@ -56,9 +56,8 @@ int main(int argc, char **argv){
     args::Group arguments(imgproc, "ARGUMENTS");
     args::ValueFlag<std::string> load(arguments, "file.bin", "name of binary file to load (with .bin)", {'l'});
     args::ValueFlag<std::string> save(arguments, "file", "name of binary file to save data (with .bin), no file will be saved by default", {'s'});
-    args::ValueFlag<std::tuple<int, int, int>> n_img(arguments, "Integer", "Number of images to use for each set", {'n'});
-    args::ValueFlag<std::tuple<int, int, int>> index(arguments, "Integers", "index images to calculate the Histogram descriptor. Separate by commas", {'m'});
-
+    args::ValueFlag<std::tuple<int, int, int>> n_img(arguments, "Integer", "Number of images to use for each set. For --dictionary command must specify start_index, final_index", {'n'});
+   
     args::Group km(arguments, "(Optional) Modify the parameters of K-means algorithm. this options is only for dictionary step.", args::Group::Validators::DontCare);
     args::ValueFlag<int> kmeans(km, "Criteria", "Stop criteria for K-means clustering (1 for iteration, 2 for epsilon, 3 both)[If set mus specify all the K-means criteria parameters].", {'k'});
     args::ValueFlag<int> it(km, "Integer", "Iteration numbers for K-means clustering (0 if not used).", {'i'});
@@ -126,14 +125,21 @@ int main(int argc, char **argv){
         get_nimages.push_back(std::get<1>(args::get(n_img)));
         get_nimages.push_back(std::get<2>(args::get(n_img)));
         n=0;
-        for(i=0;i<3;i++){
-            if(valid_sets[i]){
-                n_imgs[i]=get_nimages.at(n++);
-                n_images+=n_imgs[i];
-                std::cout << "Test set "<< years[i] <<" with " << n_imgs[i]<< " images" << std::endl;
-            }
-            else{
-                n_imgs[i]=0;
+        if(dictionary && load){
+            start_index = get_nimages.at(0);
+            finish_index = get_nimages.at(1);
+            n_images = finish_index - start_index;
+        }
+        else{
+            for(i=0;i<3;i++){
+                if(valid_sets[i]){
+                    n_imgs[i]=get_nimages.at(n++);
+                    n_images+=n_imgs[i];
+                    std::cout << "Test set "<< years[i] <<" with " << n_imgs[i]<< " images" << std::endl;
+                }
+                else{
+                    n_imgs[i]=0;
+                }
             }
         }
         std::cout << "total images to use: "<< n_images <<std::endl;
@@ -148,13 +154,6 @@ int main(int argc, char **argv){
             std::cout << "no set selected " <<std::endl;
         else
             std::cout << "total images to use: "<< n_images <<std::endl;
-    }
-    if(index){
-        start_index = std::get<0>(args::get(index));
-        finish_index = std::get<1>(args::get(index));
-    }else{
-        start_index = 0;
-        finish_index = n_images;
     }
 
     if (!load || histogram){
@@ -200,13 +199,17 @@ int main(int argc, char **argv){
         // Deleting the names of the set
         file_names.erase(file_names.begin(), file_names.end());
     }
-    cv::Mat dictionaryTextons(135, 24, CV_32FC1);
+    
     if(dictionary){
+        cv::Mat dictionaryTextons(135, 24, CV_32FC1);
         if(load){
             // Load the image data from a binary file
-            std::cout << "Loading descriptor: "<< "\""<< args::get(load) << "\"" << std::endl;
-            descriptors = loadDescriptor(n_images, args::get(load));
+            loadfile = args::get(load);
+            std::cout << "Loading descriptor: "<< "\""<< loadfile << "\"" << std::endl;
+            descriptors = loadDescriptor(n_images, loadfile);
         }
+        start_index =0;
+        finish_index =n_images;
         // Obtaining the textons from a group of images of the data
         std::cout << "Calculating the texture elements "<<  std::endl;
         getDictionaryTextons(dictionaryTextons, descriptors, start_index, finish_index);
@@ -217,14 +220,14 @@ int main(int argc, char **argv){
             saveDictionaryTextons(dictionaryTextons, args::get(save));  
             std::cout << "saved Dictionary in  "<<  args::get(save) << std::endl;
         }
-        else if(!save && dictionary){
+        else if(!save){
             saveDictionaryTextons(dictionaryTextons, "dictionary.bin");  
             std::cout << "saved Dictionary in  "<<  "dictionary.bin" << std::endl;
         }
     }
     if(histogram){
+        cv::Mat dictionaryTextons(135, 24, CV_32FC1);
         descriptorsH = new struct img_dataHistogram[n_images];
-
         if(load){
             // Load the image data from a binary file
             loadDictionaryTextons(dictionaryTextons, args::get(load));
