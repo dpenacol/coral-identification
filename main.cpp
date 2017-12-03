@@ -79,7 +79,7 @@ int main(int argc, char **argv){
     //args::ValueFlag<std::string> test(svm, "file", "Specify the test data you want to predict.", {'d'});
 
     args::Positional<std::tuple<int, int, int> > year(parser, "YEARS", "years of set to work with (separate by commas)");
-    
+    valid_sets[0]=true;
     try{
         parser.ParseCLI(argc, argv);
         std::cout << std::endl;
@@ -120,12 +120,12 @@ int main(int argc, char **argv){
             if(valid_sets[i])
                 std::cout << "Valid Set: " << years[i] << std::endl;
     }
-    if(n_img){
+    if(1){//n_img){
         std::vector<int> get_nimages;
         
-        get_nimages.push_back(std::get<0>(args::get(n_img)));
-        get_nimages.push_back(std::get<1>(args::get(n_img)));
-        get_nimages.push_back(std::get<2>(args::get(n_img)));
+        get_nimages.push_back(2);//std::get<0>(args::get(n_img)));
+        get_nimages.push_back(0);//std::get<1>(args::get(n_img)));
+        get_nimages.push_back(0);//std::get<2>(args::get(n_img)));
         n=0;
         for(i=0;i<3;i++){
             if(valid_sets[i]){
@@ -171,7 +171,7 @@ int main(int argc, char **argv){
         }
         std::cout << "[ " << porcentage(j, n_images) << " %]"<< std::endl;
     }
-    if ((descriptor || dictionary || histogram) && !load){
+    if (1){//(descriptor || dictionary || histogram) && !load){
         descriptors = new struct img_data[n_images];
         std::cout << "Calculating texture descriptor for: "<< n_images << " images" << std::endl;
 
@@ -202,12 +202,13 @@ int main(int argc, char **argv){
         file_names.erase(file_names.begin(), file_names.end());
     }
     
-    if(dictionary){
+    if(1){//dictionary){
         cv::Mat dictionaryTextons(135, 24, CV_32FC1);
         if(load){
             // Load the image data from a binary file
-            std::cout << "Loading descriptor: "<< "\""<< args::get(load) << "\"" << std::endl;
-            descriptors = loadDescriptor(n_images, args::get(load));
+            loadfile = args::get(load);
+            std::cout << "Loading descriptor: "<< "\""<< loadfile << "\"" << std::endl;
+            descriptors = loadDescriptor(n_images, loadfile);
         }
         start_index =0;
         finish_index =n_images;

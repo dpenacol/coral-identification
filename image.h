@@ -72,7 +72,7 @@ void saveDescriptorH(struct img_dataHistogram* data, int n_images, std::string f
 
 bool saveDictionaryTextons(cv::Mat dictionary, std::string path);
 
-struct img_data* loadDescriptor(std::string filename);
+struct img_data* loadDescriptor(int n_images, std::string filename);
 // Load the entire information of an image, include the coordinate, it's label
 // and the associated r24 vector from a binary file.
 
