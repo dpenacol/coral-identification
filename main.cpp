@@ -93,7 +93,7 @@ int main(int argc, char **argv){
             start_index = get_nimages.at(0);
             finish_index = get_nimages.at(1);
             n_images = finish_index - start_index;
-            if(n_images < 200){
+            if(n_images < 150){
                 std::cout << "Not enought images to calculate a dictionary of textons " << std::endl;
                 std::cout << "Try with > 200 images" << std::endl<< std::endl;
                 std::cerr << parser;
@@ -116,7 +116,7 @@ int main(int argc, char **argv){
         std::cout << "total images to use: "<< n_images <<std::endl;
     }
     // If -n flag is not set, is assigned the maximum number of images for each set
-    else{
+    else if(!svm){
         for(i=0; i<3; i++){
             if(valid_sets[i]){
                 n_images+=n_imgs[i];
@@ -134,6 +134,10 @@ int main(int argc, char **argv){
         k_m.attempts = args::get(k_a);
         k_m.iterations = args::get(k_i);
         k_m.epsilon = args::get(k_e);
+        std::cout << "Kmeans criteria modified: " <<std::endl;
+        std::cout << "attempts:   "<< k_m.attempts<<std::endl;
+        std::cout << "iterations: "<< k_m.iterations<<std::endl;
+        std::cout << "epsilon :   "<< k_m.epsilon<<std::endl;
     }else{
         k_m.attempts = 100;
         k_m.iterations = 800;
@@ -254,10 +258,9 @@ int main(int argc, char **argv){
     }
     // If --problem command is set. Create a txt file with the structure format to work with libsvm
     if(tolibsvm){
-        std::cout << "Loaded "+args::get(tolibsvm)<<" to convert into libSVM file format" << std::endl;  
-        
+        std::cout << "Loaded "+args::get(tolibsvm)<<std::endl<<"Converted into libSVM file format" << std::endl;  
         /*
-        loadfile = args::get(externalsvm); 
+        loadfile = args::get(tolibsvm); ;
         // Get the data from a binary file. 
         std::cout << "Obtaining the structure problem file from: "<<  loadfile << std::endl;
         descriptorsH = loadDescriptorH(2, loadfile);
@@ -274,7 +277,7 @@ int main(int argc, char **argv){
         grid_params.step = std::get<2>(args::get(grid));
         grid_params.best_c =0;
         grid_params.best_g =0;
-        std::cout << "Grid Search Grid(C,G) = { "<< grid_params.min<<grid_params.max <<grid_params.step <<" }"<< std::endl;
+        std::cout << "Grid Search Grid(C,G) = { "<< grid_params.min<<", "<<grid_params.max <<", "<<grid_params.step <<" }"<< std::endl;
         /*
         bestParametersSVM(prob, param, grid_params);
         */
