@@ -57,9 +57,8 @@ int main(int argc, char **argv){
     args::Group arguments(imgproc, "ARGUMENTS");
     args::ValueFlag<std::string> load(arguments, "file.bin", "name of binary file to load (with .bin)", {'l'});
     args::ValueFlag<std::string> save(arguments, "file", "name of binary file to save data (with .bin), no file will be saved by default", {'s'});
-    args::ValueFlag<std::tuple<int, int, int>> n_img(arguments, "Integer", "Number of images to use for each set", {'n'});
-    args::ValueFlag<std::tuple<int, int, int>> index(arguments, "Integers", "index images to calculate the Histogram descriptor. Separate by commas", {'m'});
-
+    args::ValueFlag<std::tuple<int, int, int>> n_img(arguments, "Integer", "Number of images to use for each set. For --dictionary command must specify start_index, final_index", {'n'});
+   
     args::Group km(arguments, "(Optional) Modify the parameters of K-means algorithm. this options is only for dictionary step.", args::Group::Validators::DontCare);
     args::ValueFlag<int> kmeans(km, "Criteria", "Stop criteria for K-means clustering (1 for iteration, 2 for epsilon, 3 both)[If set mus specify all the K-means criteria parameters].", {'k'});
     args::ValueFlag<int> it(km, "Integer", "Iteration numbers for K-means clustering (0 if not used).", {'i'});
@@ -79,7 +78,7 @@ int main(int argc, char **argv){
     //args::ValueFlag<std::string> test(svm, "file", "Specify the test data you want to predict.", {'d'});
 
     args::Positional<std::tuple<int, int, int> > year(parser, "YEARS", "years of set to work with (separate by commas)");
-    valid_sets[0]=true;
+    valid_sets[1]=true;
     try{
         parser.ParseCLI(argc, argv);
         std::cout << std::endl;
@@ -123,18 +122,25 @@ int main(int argc, char **argv){
     if(1){//n_img){
         std::vector<int> get_nimages;
         
-        get_nimages.push_back(2);//std::get<0>(args::get(n_img)));
-        get_nimages.push_back(0);//std::get<1>(args::get(n_img)));
+        get_nimages.push_back(0);//std::get<0>(args::get(n_img)));
+        get_nimages.push_back(2);//std::get<1>(args::get(n_img)));
         get_nimages.push_back(0);//std::get<2>(args::get(n_img)));
         n=0;
-        for(i=0;i<3;i++){
-            if(valid_sets[i]){
-                n_imgs[i]=get_nimages.at(n++);
-                n_images+=n_imgs[i];
-                std::cout << "Test set "<< years[i] <<" with " << n_imgs[i]<< " images" << std::endl;
-            }
-            else{
-                n_imgs[i]=0;
+        if(dictionary){
+            start_index = get_nimages.at(0);
+            final_index = get_nimages.at(1);
+            n_images = start_index - final_index;
+        }
+        else{
+            for(i=0;i<3;i++){
+                if(valid_sets[i]){
+                    n_imgs[i]=get_nimages.at(n++);
+                    n_images+=n_imgs[i];
+                    std::cout << "Test set "<< years[i] <<" with " << n_imgs[i]<< " images" << std::endl;
+                }
+                else{
+                    n_imgs[i]=0;
+                }
             }
         }
         std::cout << "total images to use: "<< n_images <<std::endl;
@@ -149,13 +155,6 @@ int main(int argc, char **argv){
             std::cout << "no set selected " <<std::endl;
         else
             std::cout << "total images to use: "<< n_images <<std::endl;
-    }
-    if(index){
-        start_index = std::get<0>(args::get(index));
-        finish_index = std::get<1>(args::get(index));
-    }else{
-        start_index = 0;
-        finish_index = n_images;
     }
 
     if (!load || histogram){
