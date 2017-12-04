@@ -261,6 +261,8 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
         centers[i] = cv::Mat(15,24,CV_32FC1);        
         row[i] = 0;
     }
+    std::cout << "Calculating the dictionary of texture elements "<<  std::endl;
+    std::cout << "From image # "<<start_index <<"\n"<<"To image   # "<< finish_index<<std::endl;
 
     // Checking the number of labels for each class
     for(j=start_index; j<finish_index; j++){
@@ -295,10 +297,10 @@ void getDictionaryTextons(cv::Mat dictionaryTextons, struct img_data* data, int 
 
     // Applying the K-means algorithm for each class_data
     for(int m=0; m<9; m++){
-        std::cout << "\r" <<"[ " <<green<<porcentage(m, 8)<<reset<<" %] Obtaining textons of the " << m + 1 << " class."<<std::flush<<"\r";//800, 0.0005
+        std::cout << "\r" <<"[ " <<green<<porcentage(m, 8)<<reset<<" %] Obtaining textons of the " << m + 1 << " class."<<std::flush<<"\r";
         kmeans(class_data[m], clusters, labels[m], cv::TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, iterations, epsilon), attempts, initial_centers, centers[m]);
     }
-    std::cout << "\r" <<"[" <<green<<100<<reset<<" %] " <<green+"OK"+reset<<std::endl;
+    std::cout << std::endl;
 
     // Saving the 135 textons on the dictionary
     n = 0;
@@ -523,7 +525,7 @@ void saveSVMtxt(struct img_dataHistogram* dataH, int n_images){
     int i, j, k;
     std::ofstream file(filename);
     if(n_images == 0)
-        n_images = sizeof(dataH)/sizeof(struct img_dataHistogram*);
+        n_images = sizeof(dataH)/sizeof(struct img_dataHistogram);
 
     // write the histogram descriptor in a file to use with libsvm library
     if (file.is_open()){
